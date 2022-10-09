@@ -1,0 +1,333 @@
+---
+title: "Antibiotic prescribing and remote consultations in primary care"
+format: revealjs
+editor: visual
+---
+
+## Background
+
+```{r}
+library(tidyverse)
+library(gt)
+
+Q <- readRDS(here::here('data', 'Q.RDS'))
+W_A <- readRDS(here::here('data', 'W_A.RDS'))
+dat_obs <- readRDS( here::here('data', 'dat_obs.RDS'))
+
+Q <- readRDS(here::here('data', 'Q.RDS'))
+g <- readRDS(here::here('data', 'g.RDS'))
+
+
+```
+
+-   The use of remote consultations has increased significantly in recent years
+
+-   There are concerns that remote consultations could increase antibiotic prescribing rates
+
+-   Increased antibiotic prescribing could lead to increased antibiotic resistance
+
+-   Are patients seen remotely more likely to be prescribed antibiotics compared to those seen face-to-face?
+
+## What we know about antibiotic prescribing in primary care
+
+-   Primary care is one of the main prescribers with GPs prescribing 71.4% of the total consumption of antibiotics in 2019
+
+-   Although antibiotic prescribing in primary care declined between 2014 and 2018, studies reveal that 20% of antibiotic prescribing is still inappropriate.
+
+-   Antibiotic prescribing is higher in areas of high deprivation, even after controlling for factors such as health need
+
+-   Patient age, comorbidities (eg asthma), deprivation
+
+-   Clinician role and experience, eg locums prescribed more than practice based GPs
+
+## Data {background-color="aquamarine"}
+
+gj
+
+## Data and study population
+
+-   CPRD Aurum data 1 May 2021 -- 30 June 2022
+
+-   Patients with a GP consultation for **acute respiratory infections**
+
+-   Code list based on previous studies can be subset into URTI, LRTI, sinusitis, otitis media and otitis externa
+
+-   BNF section 5.1 (excluding antileprotic and TB drugs)
+
+-   Only first GP ARI consultation in a 7-day period included (if a mix of consultation modes then assigned to the face-to-face group)
+
+## Variables
+
+-   Age, sex, deprivation, comorbidities, previous consultations, previous antibiotic use
+-   Practice size, rural/urban, previous antibiotic prescribing level, previous consultation rates
+-   Covid infection rates in regions
+-   GP role (eg locum, partner)
+
+## Methods {background-color="aquamarine"}
+
+# Targeted maximum likelihood estimation (TMLE)
+
+TMLE has two main parts
+
+-   Estimates the conditional probability of being exposed (remote consultation)
+-   Estimates the effect of the treatment on the outcome (antibiotics prescribed)
+-   Combines that to estimate the average treatment effect
+
+It is doubly robust so if you get either of those two right then your estimate is consistent
+
+## Super learner
+
+An ensemble machine learning that combines multiple learners (algorithms) and uses cross-validation to select the optimal ensemble (collection) of learners making a single new prediction algorithm This can either be one learner or a combination of the different learners
+
+[![](https://koalaverse.github.io/machine-learning-in-R/images/h2oEnsemble.png){width="16cm"}](https://koalaverse.github.io/machine-learning-in-R/images/h2oEnsemble.png)
+
+## Picking your learners
+
+The learners should have a diverse set of learning strategies
+
+Pick learners based on
+
+-   Data types (eg add models that handle splines if you have continuous data)
+
+-   Number of predictors (if many then use learners that reduce the dimensionality)
+
+-   Number of learners depends on how good your computer is
+
+Take a set of models 4 models logistic, random forest, xgboost, polyspline
+
+## Cross-validation
+
+Create a cross validation set of your data (eg 5 folds)
+
+Train all the models on 4 out of the 5 data chunks using the fifth chunk to get predictions
+
+Repeat this until each chunk has been left out one time and you have a set of cross-validated predictions for the full data set for each model
+
+## 
+
+pred_mod_a -- predictions from the cross validation from model a pred_mod_b -- predictions from the cross validation from model b pred_mod_c -- predictions from the cross validation from model c pred_mod_d -- predictions from the cross validation from model d
+
+These are our cross validated predictions
+
+Predictions on based data that was not used to train the model
+
+## Predict the outcome using the cross-validated predictions
+
+Use the cross-validated predictions to predict the outcome
+
+Y \~ a*pred_mod_a + b*pred_mod_b + c*pred_mod_c + d*pred_mod_d
+
+The model used is called a metalearner and the actual model can be anything! (default is a Non-Negative Least Squares)
+
+## 
+
+Learners that did well will have a larger coefficient and therefore have more of a weight
+
+Y \~ 2*pred_mod_a + 0.5*pred_mod_b + 9*pred_mod_c + 3*pred_mod_d
+
+This is our super learner algorithm
+
+## 
+
+Fit base learners (our 4 models) on the entire data set and get predictions. This is your new dataset.
+
+Plug that data into the super learner to get final predictions!
+
+The `sl3` package will do all of this for you
+
+## Step 1: estimate the expected value of the outcome
+
+There is a function Q which takes A (treatment) and W (covariates) as inputs and return the conditional expectation of Y (outcome).
+
+We want to model the outcome (Y_abx). In the TMLE literature this is referred to Q, a function that takes A_remote and W (covariates) as inputs. We estimate Q using superlearner.
+
+```{r, eval=FALSE}
+Q <- SuperLearner(Y = Y, # Y is the outcome vector
+                  X = W_A, # W_A is the matrix of age, asthma, male,  and A
+                  family=binomial(), # specify we have a binary outcome
+                  SL.library = sl_libs) 
+
+```
+
+## 
+
+We then use that model to predict what the estimated outcome would be if
+
+::: panel-tabset
+## Actual treatment
+
+```{r}
+#| include: true
+#| eval: false
+#| echo: true
+Q_A <- predict(Q)$pred %>% 
+  as.vector()# predictions using the treatment they actually received
+
+```
+
+## Everyone got the treatment
+
+```{r}
+#| include: true
+#| echo: true
+#| eval: false
+W_A1 <- W_A %>%
+  mutate(A_remote = 1)  # data set where everyone received treatment
+Q_1 <- predict(Q, newdata = W_A1)$pred %>% 
+  as.vector()# predict on that everyone-exposed data set
+
+```
+
+## Everyone got the control
+
+```{r}
+#| include: true
+#| echo: true
+#| eval: false
+
+W_A0 <- W_A %>% 
+  mutate(A_remote = 0) # data set where no one received treatment
+Q_0 <- predict(Q, newdata = W_A0)$pred %>% 
+  as.vector()
+```
+:::
+
+## Combined data
+
+```{r}
+#| include: true
+#| echo: false
+#| eval: true
+dat_tmle <- readRDS(here::here('data', 'dat_tmle.RDS'))
+dat_tmle %>%
+  slice_head(n = 5) %>%  
+  gt() %>% 
+  fmt_number(columns = c(Q_A, Q_0, Q_1)) %>% 
+  tab_style(
+    style = cell_fill(color = "teal"),
+    locations = cells_body(
+      columns =Q_A,
+    )) %>% 
+  tab_style(
+    style = cell_fill(color = "teal"),
+    locations = cells_body(
+      columns =Q_0,
+      rows = A_remote == 0
+    )) %>% 
+  tab_style(
+    style = cell_fill(color = "teal"),
+    locations = cells_body(
+      columns =Q_1,
+      rows = A_remote == 1
+    )) 
+
+```
+
+## Step 2: Estimate the probability of treatment
+
+We want to estimate the probability of treatment (ie the propensity score).
+
+```{r, eval=FALSE}
+A <- dat_obs$A_remote
+W <- dat_obs %>% 
+  select(-Y_abx, -A_remote) # matrix of predictors that only contains the confounders age, asthma and male
+g <- SuperLearner(Y = A, # outcome is the A (treatment) vector
+                  X = W, # W is a matrix of predictors
+                  family=binomial(), # treatment is a binomial outcome
+                  SL.library=sl_libs) # using same candidate learners; could use different learners
+
+```
+
+## 
+
+We use super learner again and use the results to calculate the 'clever covariate'
+
+1.  The inverse probability of receiving treatment.
+2.  The negative inverse probability of not receiving treatment.
+3.  If the observation was treated, the inverse probability of receiving treatment, and if they were not treated, the negative inverse probability of not receiving treatment. (This is the clever covariate, `H_A`)
+
+```{r}
+#| include: true
+#| echo: true
+#| eval: false
+g_w <- predict(g)$pred %>% 
+  as.vector() # Pr(A=1|W)
+H_1 <- 1/g_w
+H_0 <- -1/(1-g_w) # Pr(A=0|W) is 1-Pr(A=1|W)
+dat_tmle <- # add clever covariate data to dat_tmle
+  dat_tmle %>%
+  bind_cols(
+    H_1 = H_1,
+    H_0 = H_0) %>%
+  mutate(H_A = case_when(A_remote == 1 ~ H_1, # if A is 1 (treated), assign H_1
+                         A_remote == 0 ~ H_0))  # if A is 0 (not treated), assign H_0
+
+```
+
+## Step 3: Estimate the Fluctuation Parameter
+
+The point of this step is to solve an estimating equation for the efficient influence function (EIF) of our estimand of interest.
+
+Logit(True outcome) = logit(initial outcome estimate) + eps\*clever covariate (H_A)
+
+We can estimate eps using a logistic regression with one covariate (the clever covariate), no intercept and the initial outcome estimate as a fixed intercept (offset)
+
+glm(Y \~ -1 + offset(qlogis(Q_A)) + H_A, data=df , family=binomial)
+
+## 
+
+Step 2 is kind of equivalent to regressing the residuals from the initial outcome regression onto a covariate that is a function of the propensity score
+
+This means that if the initial model in step 1 was correctly specified then there is no signal in the residuals → epsilon will be small
+
+Strong residual confounding → large epsilon → large update Weak residual confounding → small epsilon → small update
+
+## Quick recap
+
+In Step 1, we obtained initial estimates of the expected outcome using super learner. These estimates are optimized to estimate E\[Y\|A,W\] (expected value of the outcome) not the ATE.
+
+We need to update those initial expected outcome estimates using information about the treatment mechanism, so we computed the expected probability of treatment, conditional on confounders, in Step 2.
+
+Step 3, we used quantities from Step 1 and Step 2 to solve an estimating equation for the EIF. This gave us an estimate of epsilon.
+
+## Step 4: update the initial estimates of the expected outcome
+
+We are updating the estimates from step 1 using information from step 2 and 3. The size of epsilon determines the size of the update.
+
+Q_A\_updated = plogis(qlogis(Q_A) + eps\*H_A) 1. Update the expected outcomes of all observations, given the treatment they actually received and their baseline confounders. Q_A\_updated 2. Update the expected outcomes, conditional on baseline confounders and everyone receiving the treatment. (Q_1\_updated) 3. Update the expected outcomes, conditional on baseline confounders and no one receiving the treatment. (Q_0\_updated)
+
+## Step 5: compute the ATE
+
+Mean difference between the updated outcome estimates when everyone is treated vs when no one is treated
+
+ATE = Q_1\_updated - Q_0\_updated
+
+## Results
+
+-   There were 6598 face-to-face and 6124 remote consultations (total 12,722)
+
+-   15% of the face-to-face consultations were of mixed mode
+
+-   Antibiotics were prescribed in 50% of face-to-face/mixed consultations compared to 45% of remote consultations
+
+-   There is substantial variation in the use of remote consultations for different respiratory infections and also in the proportion of consultations leading antibiotics being prescribed. No clear correlation between % remote and % antibiotics prescribed
+
+## Discussion
+
+-   Not all infection types are likely to be seen remotely
+-   Reassuring that there is no large difference in antibiotic prescribing between remote and face-to-face consultations but this does not mean that there is no over-prescribing or missed prescribing
+-   15% of those in the face-to-face group had a mix of consultation modes so were seen multiple times. The mixed mode group had a lower crude antibiotic prescribing rate than face-to-face only or remote only
+-   Re-run analysis excluding the mixed mode group
+- data quality is an issue 
+
+## Sensitivity analysis/additional checks
+
+We are likely underestimating remote consultations. Randomly reassign 10% of face-to-face and rerun model multiple times 
+
+Not all consultations are properly coded so we will be missing some respiratory infections 
+
+Identify antibiotics most likely prescribed for respiratory infections Look at % of consultations getting those antibiotics that were coded as respiratory infections
+
+## Thank you
+
+Ofran Almossawi Kaat de Corte
