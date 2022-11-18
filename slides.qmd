@@ -1,10 +1,52 @@
 ---
-title: "Antibiotic prescribing and remote consultations in primary care"
+title: "Causal inference in R "
 format: revealjs
 editor: visual
 ---
 
-## Background
+## About me
+
+-   Principal data analyst at the Health Foundation
+-   Part-time PhD student at the Institute of Child Health at UCL
+-   R-Ladies London organiser
+-   #rdogladies
+
+## About this topic
+
+-   Machine learning has been all the rave - mainly focussed on prediction
+-   Causal inference is the process of determining the independent, actual effect of a particular phenomenon that is a component of a larger system
+
+![](https://imgs.xkcd.com/comics/correlation.png)
+
+## My motivation for using causal inference
+
+-   What is the effect on antibiotic prescribing of having a remote GP consultation compared to a face-to-face consultation?
+
+-   Important questions as the pandemic has increased the use of remote consultations in general practice
+
+-   we need to preserve antibiotics to minimise antibiotic resistance
+
+-   Patients have remote consultations might be different to those that have face-to-face consultations \## Many different types of causal inference
+
+-   Interrupted timeseries
+
+-   Difference-in-difference
+
+-   Regression discontinuity design
+
+-   Matching
+
+-   Inverse probability weighting
+
+-   Targeted maximum likelihood
+
+## Causal assumptions
+
+1.  The stable treatment assumption (SUTVA) the treatment status of any individual does not affect the potential outcomes of other individuals
+
+2.  No unmeasured confounding. This means that all common causes of both the treatment and the outcome have been measured.
+
+3.  Positivity. Within each strata of the set of covariates each individual has a nonzero probability of receiving either treatment.
 
 ```{r}
 library(tidyverse)
@@ -20,60 +62,25 @@ g <- readRDS(here::here('data', 'g.RDS'))
 
 ```
 
--   The use of remote consultations has increased significantly in recent years
-
--   There are concerns that remote consultations could increase antibiotic prescribing rates
-
--   Increased antibiotic prescribing could lead to increased antibiotic resistance
-
--   Are patients seen remotely more likely to be prescribed antibiotics compared to those seen face-to-face?
-
-## What we know about antibiotic prescribing in primary care
-
--   Primary care is one of the main prescribers with GPs prescribing 71.4% of the total consumption of antibiotics in 2019
-
--   Although antibiotic prescribing in primary care declined between 2014 and 2018, studies reveal that 20% of antibiotic prescribing is still inappropriate.
-
--   Antibiotic prescribing is higher in areas of high deprivation, even after controlling for factors such as health need
-
--   Patient age, comorbidities (eg asthma), deprivation
-
--   Clinician role and experience, eg locums prescribed more than practice based GPs
-
-## Data {background-color="aquamarine"}
-
-gj
-
-## Data and study population
-
--   CPRD Aurum data 1 May 2021 -- 30 June 2022
-
--   Patients with a GP consultation for **acute respiratory infections**
-
--   Code list based on previous studies can be subset into URTI, LRTI, sinusitis, otitis media and otitis externa
-
--   BNF section 5.1 (excluding antileprotic and TB drugs)
-
--   Only first GP ARI consultation in a 7-day period included (if a mix of consultation modes then assigned to the face-to-face group)
-
-## Variables
-
--   Age, sex, deprivation, comorbidities, previous consultations, previous antibiotic use
--   Practice size, rural/urban, previous antibiotic prescribing level, previous consultation rates
--   Covid infection rates in regions
--   GP role (eg locum, partner)
-
-## Methods {background-color="aquamarine"}
-
 # Targeted maximum likelihood estimation (TMLE)
 
 TMLE has two main parts
 
--   Estimates the conditional probability of being exposed (remote consultation)
--   Estimates the effect of the treatment on the outcome (antibiotics prescribed)
+-   Estimate the conditional probability of being exposed
+-   Estimate the expected value of the outcome using treatment and confounders as predictors the outcome
 -   Combines that to estimate the average treatment effect
 
 It is doubly robust so if you get either of those two right then your estimate is consistent
+
+#
+
+![](tlverse_github.png)
+
+## ghj
+
+I'll walk step-by-step through a basic version of the TMLE algorithm - estimating the mean difference in outcomes, adjusted for confounders, for a binary outcome and binary treatment.
+
+If causal assumptions are met, this is called the Average Treatment Effect (ATE), or the mean difference in outcomes in a world in which everyone had received the treatment compared to a world in which everyone had not.
 
 ## Super learner
 
@@ -302,32 +309,6 @@ Mean difference between the updated outcome estimates when everyone is treated v
 
 ATE = Q_1\_updated - Q_0\_updated
 
-## Results
+## Keen to learn more?
 
--   There were 6598 face-to-face and 6124 remote consultations (total 12,722)
-
--   15% of the face-to-face consultations were of mixed mode
-
--   Antibiotics were prescribed in 50% of face-to-face/mixed consultations compared to 45% of remote consultations
-
--   There is substantial variation in the use of remote consultations for different respiratory infections and also in the proportion of consultations leading antibiotics being prescribed. No clear correlation between % remote and % antibiotics prescribed
-
-## Discussion
-
--   Not all infection types are likely to be seen remotely
--   Reassuring that there is no large difference in antibiotic prescribing between remote and face-to-face consultations but this does not mean that there is no over-prescribing or missed prescribing
--   15% of those in the face-to-face group had a mix of consultation modes so were seen multiple times. The mixed mode group had a lower crude antibiotic prescribing rate than face-to-face only or remote only
--   Re-run analysis excluding the mixed mode group
-- data quality is an issue 
-
-## Sensitivity analysis/additional checks
-
-We are likely underestimating remote consultations. Randomly reassign 10% of face-to-face and rerun model multiple times 
-
-Not all consultations are properly coded so we will be missing some respiratory infections 
-
-Identify antibiotics most likely prescribed for respiratory infections Look at % of consultations getting those antibiotics that were coded as respiratory infections
-
-## Thank you
-
-Ofran Almossawi Kaat de Corte
+-   https://www.khstats.com/blog/tmle/tutorial.html
