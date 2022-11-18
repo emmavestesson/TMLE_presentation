@@ -407,7 +407,7 @@ sl3_list_learners(properties = 'binomial')
 
 ```{r}
 #| include: true
-#| eval: false
+#| eval: true
 #| echo: true
 
 glm_learner <- Lrnr_glm$new(family = "binomial")
@@ -415,6 +415,19 @@ lasso_learner <- Lrnr_glmnet$new(family = "binomial")
 ridge_learner <- Lrnr_glmnet$new(alpha = 0, family = "binomial")
 
 ls_metalearner <- make_learner(Lrnr_nnls)
+
+```
+
+
+##
+
+
+```{r}
+#| include: true
+#| eval: false
+#| echo: true
+
+
 sl_Y <- Lrnr_sl$new(
   learners = list(glm_learner, lasso_learner, ridge_learner),
   metalearner = ls_metalearner
@@ -428,7 +441,6 @@ learner_list <- list(A = sl_A, Y = sl_Y)
 tmle_fit <- tmle3(ate_spec, washb_data, node_list, learner_list)
 
 ```
-
 
 
 
