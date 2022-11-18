@@ -399,15 +399,44 @@
 <li>#rdogladies</li>
 </ul>
 </section>
+<section id="content" class="slide level2">
+<h2>Content</h2>
+<ul>
+<li>My origin story</li>
+<li>A brief theoretical introduction to causal inference</li>
+<li>Theory of TMLE</li>
+<li>Finally some code! (<code>sl3</code> and <code>tmle3</code>)</li>
+</ul>
+</section>
 <section id="my-motivation-for-using-causal-inference" class="slide level2">
 <h2>My motivation for using causal inference</h2>
 <ul>
 <li><p>What is the effect on antibiotic prescribing of having a remote GP consultation compared to a face-to-face consultation?</p></li>
 <li><p>Important questions as the pandemic has increased the use of remote consultations in general practice</p></li>
 <li><p>We need to preserve antibiotics to minimise antibiotic resistance</p></li>
-<li><p>Patients have remote consultations might be different to those that have face-to-face consultations</p></li>
 </ul>
 </section>
+<section id="section" class="slide level2">
+<h2></h2>
+<div class="quarto-layout-panel">
+<div class="quarto-layout-row quarto-layout-valign-top">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><img data-src="https://images.unsplash.com/photo-1592422207043-9e19520a698e?ixlib=rb-4.0.3&amp;ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHlvdW5nJTIwcGhvbmV8ZW58MHx8MHx8&amp;auto=format&amp;fit=crop&amp;w=500&amp;q=60"></p>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: center;">
+<p><img data-src="https://images.unsplash.com/photo-1498757581981-8ddb3c0b9b07?ixlib=rb-4.0.3&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=crop&amp;w=688&amp;q=80"></p>
+</div>
+</div>
+</div>
+</section>
+<section id="about-this-topic" class="slide level2">
+<h2>About this topic</h2>
+<ul>
+<li>Machine learning has been all the rave - mainly focussed on prediction</li>
+<li>Causal inference is used to determe the independent, actual effect of a treatment on a given outcome</li>
+</ul>
+
+<img data-src="https://imgs.xkcd.com/comics/correlation.png" class="r-stretch"></section>
 <section>
 <section id="different-types-of-causal-inference" class="title-slide slide level1 center">
 <h1>Different types of causal inference</h1>
@@ -420,17 +449,6 @@
 <li><p>(Augmented) Inverse probability weighting <code>AIPW</code></p></li>
 <li><p>Targeted maximum likelihood estimation <code>tmle3</code></p></li>
 </ul>
-</section>
-<section id="about-this-topic" class="slide level2">
-<h2>About this topic</h2>
-<ul>
-<li>Machine learning has been all the rave - mainly focussed on prediction</li>
-<li>Causal inference is the process of determining the independent, actual effect of a particular phenomenon that is a component of a larger system</li>
-</ul>
-
-<img data-src="https://imgs.xkcd.com/comics/correlation.png" class="r-stretch"></section>
-<section id="section" class="slide level2">
-<h2></h2>
 <div class="cell">
 
 </div>
@@ -448,77 +466,32 @@
 <section id="causal-assumptions" class="slide level2">
 <h2>Causal assumptions</h2>
 <p>It is not enough to use a method that is suitable for causal inference to make causal claims</p>
+<div>
 <ol type="1">
-<li><p>The stable treatment assumption the treatment status of any individual does not affect the potential outcomes of other individuals</p></li>
-<li><p>No unmeasured confounding. This means that all common causes of both the treatment and the outcome have been measured.</p></li>
-<li><p>Positivity. Within each strata of the set of covariates each individual has a nonzero probability of receiving either treatment.</p></li>
+<li class="fragment"><p>The stable treatment assumption the treatment status of any individual does not affect the potential outcomes of other individuals</p></li>
+<li class="fragment"><p>No unmeasured confounding. This means that all common causes of both the treatment and the outcome have been measured.</p></li>
+<li class="fragment"><p>Positivity. Within each strata of the set of covariates each individual has a nonzero probability of receiving either treatment.</p></li>
 </ol>
+</div>
 </section></section>
 <section>
 <section id="section-1" class="title-slide slide level1 center">
 <h1></h1>
 
 <img data-src="tlverse_github.png" class="r-stretch"></section>
-<section id="ghj" class="slide level2">
-<h2>ghj</h2>
-<p>I’ll walk step-by-step through a basic version of the TMLE algorithm - estimating the mean difference in outcomes, adjusted for confounders, for a binary outcome and binary treatment.</p>
+<section id="toy-example" class="slide level2">
+<h2>Toy example</h2>
+<p>Basic version of the TMLE algorithm - estimating the mean difference in outcomes, adjusted for confounders, for a binary outcome and binary treatment.</p>
 <p>If causal assumptions are met, this is called the Average Treatment Effect (ATE), or the mean difference in outcomes in a world in which everyone had received the treatment compared to a world in which everyone had not.</p>
-</section>
-<section id="super-learner" class="slide level2">
-<h2>Super learner</h2>
-<p>An ensemble machine learning that combines multiple learners (algorithms) and uses cross-validation to select the optimal ensemble (collection) of learners making a single new prediction algorithm This can either be one learner or a combination of the different learners</p>
-
-<img data-src="https://koalaverse.github.io/machine-learning-in-R/images/h2oEnsemble.png" style="width:16cm" class="r-stretch quarto-figure-center"></section>
-<section id="picking-your-learners" class="slide level2">
-<h2>Picking your learners</h2>
-<p>The learners should have a diverse set of learning strategies</p>
-<p>Pick learners based on</p>
-<ul>
-<li><p>Data types (eg add models that handle splines if you have continuous data)</p></li>
-<li><p>Number of predictors (if many then use learners that reduce the dimensionality)</p></li>
-<li><p>Number of learners depends on how good your computer is</p></li>
-</ul>
-<p>Take a set of models 4 models logistic, random forest, xgboost, polyspline</p>
-</section>
-<section id="cross-validation" class="slide level2">
-<h2>Cross-validation</h2>
-<p>Create a cross validation set of your data (eg 5 folds)</p>
-<p>Train all the models on 4 out of the 5 data chunks using the fifth chunk to get predictions</p>
-<p>Repeat this until each chunk has been left out one time and you have a set of cross-validated predictions for the full data set for each model</p>
-</section>
-<section id="section-2" class="slide level2">
-<h2></h2>
-<p>pred_mod_a – predictions from the cross validation from model a pred_mod_b – predictions from the cross validation from model b pred_mod_c – predictions from the cross validation from model c pred_mod_d – predictions from the cross validation from model d</p>
-<p>These are our cross validated predictions</p>
-<p>Predictions on based data that was not used to train the model</p>
-</section>
-<section id="predict-the-outcome-using-the-cross-validated-predictions" class="slide level2">
-<h2>Predict the outcome using the cross-validated predictions</h2>
-<p>Use the cross-validated predictions to predict the outcome</p>
-<p>Y ~ a<em>pred_mod_a + b</em>pred_mod_b + c<em>pred_mod_c + d</em>pred_mod_d</p>
-<p>The model used is called a metalearner and the actual model can be anything! (default is a Non-Negative Least Squares)</p>
-</section>
-<section id="section-3" class="slide level2">
-<h2></h2>
-<p>Learners that did well will have a larger coefficient and therefore have more of a weight</p>
-<p>Y ~ 2<em>pred_mod_a + 0.5</em>pred_mod_b + 9<em>pred_mod_c + 3</em>pred_mod_d</p>
-<p>This is our super learner algorithm</p>
-</section>
-<section id="section-4" class="slide level2">
-<h2></h2>
-<p>Fit base learners (our 4 models) on the entire data set and get predictions. This is your new dataset.</p>
-<p>Plug that data into the super learner to get final predictions!</p>
-<p>The <code>sl3</code> package will do all of this for you</p>
 </section>
 <section id="step-1-estimate-the-expected-value-of-the-outcome" class="slide level2">
 <h2>Step 1: estimate the expected value of the outcome</h2>
-<p>There is a function Q which takes A (treatment) and W (covariates) as inputs and return the conditional expectation of Y (outcome).</p>
-<p>We want to model the outcome (Y_abx). In the TMLE literature this is referred to Q, a function that takes A_remote and W (covariates) as inputs. We estimate Q using superlearner.</p>
 <div class="cell">
-
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>Q <span class="ot">&lt;-</span> <span class="fu">glm</span>(Y_abx <span class="sc">~</span> A_remote <span class="sc">+</span> covar1 <span class="sc">+</span> covar2, <span class="at">family =</span> <span class="st">'binomial'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>`</p>
 </section>
-<section id="section-5" class="slide level2">
+<section id="section-2" class="slide level2">
 <h2></h2>
 <p>We then use that model to predict what the estimated outcome would be if</p>
 <div class="panel-tabset">
@@ -526,24 +499,24 @@
 <div class="tab-content">
 <div id="tabset-1-1">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>Q_A <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q)<span class="sc">$</span>pred <span class="sc">%&gt;%</span> </span>
-<span id="cb1-2"><a href="#cb1-2"></a>  <span class="fu">as.vector</span>()<span class="co"># predictions using the treatment they actually received</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>Q_A <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q)<span class="sc">$</span>pred <span class="sc">%&gt;%</span> </span>
+<span id="cb2-2"><a href="#cb2-2"></a>  <span class="fu">as.vector</span>()<span class="co"># predictions using the treatment they actually received</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div id="tabset-1-2">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>W_A1 <span class="ot">&lt;-</span> W_A <span class="sc">%&gt;%</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a>  <span class="fu">mutate</span>(<span class="at">A_remote =</span> <span class="dv">1</span>)  <span class="co"># data set where everyone received treatment</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a>Q_1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q, <span class="at">newdata =</span> W_A1)<span class="sc">$</span>pred <span class="sc">%&gt;%</span> </span>
-<span id="cb2-4"><a href="#cb2-4"></a>  <span class="fu">as.vector</span>()<span class="co"># predict on that everyone-exposed data set</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>W_A1 <span class="ot">&lt;-</span> W_A <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>  <span class="fu">mutate</span>(<span class="at">A_remote =</span> <span class="dv">1</span>)  <span class="co"># data set where everyone received treatment</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>Q_1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q, <span class="at">newdata =</span> W_A1)<span class="sc">$</span>pred <span class="sc">%&gt;%</span> </span>
+<span id="cb3-4"><a href="#cb3-4"></a>  <span class="fu">as.vector</span>()<span class="co"># predict on that everyone-exposed data set</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div id="tabset-1-3">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>W_A0 <span class="ot">&lt;-</span> W_A <span class="sc">%&gt;%</span> </span>
-<span id="cb3-2"><a href="#cb3-2"></a>  <span class="fu">mutate</span>(<span class="at">A_remote =</span> <span class="dv">0</span>) <span class="co"># data set where no one received treatment</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a>Q_0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q, <span class="at">newdata =</span> W_A0)<span class="sc">$</span>pred <span class="sc">%&gt;%</span> </span>
-<span id="cb3-4"><a href="#cb3-4"></a>  <span class="fu">as.vector</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>W_A0 <span class="ot">&lt;-</span> W_A <span class="sc">%&gt;%</span> </span>
+<span id="cb4-2"><a href="#cb4-2"></a>  <span class="fu">mutate</span>(<span class="at">A_remote =</span> <span class="dv">0</span>) <span class="co"># data set where no one received treatment</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a>Q_0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(Q, <span class="at">newdata =</span> W_A0)<span class="sc">$</span>pred <span class="sc">%&gt;%</span> </span>
+<span id="cb4-4"><a href="#cb4-4"></a>  <span class="fu">as.vector</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
@@ -554,12 +527,12 @@
 <div class="cell">
 <div class="cell-output-display">
 
-<div id="gsabdfgixs" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="pjrzkehsnm" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-:where(#gsabdfgixs) .gt_table {
+:where(#pjrzkehsnm) .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -584,7 +557,7 @@
   border-left-color: #D3D3D3;
 }
 
-:where(#gsabdfgixs) .gt_heading {
+:where(#pjrzkehsnm) .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -596,7 +569,7 @@
   border-right-color: #D3D3D3;
 }
 
-:where(#gsabdfgixs) .gt_title {
+:where(#pjrzkehsnm) .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -608,7 +581,7 @@
   border-bottom-width: 0;
 }
 
-:where(#gsabdfgixs) .gt_subtitle {
+:where(#pjrzkehsnm) .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -620,13 +593,13 @@
   border-top-width: 0;
 }
 
-:where(#gsabdfgixs) .gt_bottom_border {
+:where(#pjrzkehsnm) .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-:where(#gsabdfgixs) .gt_col_headings {
+:where(#pjrzkehsnm) .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -641,7 +614,7 @@
   border-right-color: #D3D3D3;
 }
 
-:where(#gsabdfgixs) .gt_col_heading {
+:where(#pjrzkehsnm) .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -661,7 +634,7 @@
   overflow-x: hidden;
 }
 
-:where(#gsabdfgixs) .gt_column_spanner_outer {
+:where(#pjrzkehsnm) .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -673,15 +646,15 @@
   padding-right: 4px;
 }
 
-:where(#gsabdfgixs) .gt_column_spanner_outer:first-child {
+:where(#pjrzkehsnm) .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-:where(#gsabdfgixs) .gt_column_spanner_outer:last-child {
+:where(#pjrzkehsnm) .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-:where(#gsabdfgixs) .gt_column_spanner {
+:where(#pjrzkehsnm) .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -693,7 +666,7 @@
   width: 100%;
 }
 
-:where(#gsabdfgixs) .gt_group_heading {
+:where(#pjrzkehsnm) .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -718,7 +691,7 @@
   vertical-align: middle;
 }
 
-:where(#gsabdfgixs) .gt_empty_group_heading {
+:where(#pjrzkehsnm) .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -733,15 +706,15 @@
   vertical-align: middle;
 }
 
-:where(#gsabdfgixs) .gt_from_md > :first-child {
+:where(#pjrzkehsnm) .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-:where(#gsabdfgixs) .gt_from_md > :last-child {
+:where(#pjrzkehsnm) .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-:where(#gsabdfgixs) .gt_row {
+:where(#pjrzkehsnm) .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -760,7 +733,7 @@
   overflow-x: hidden;
 }
 
-:where(#gsabdfgixs) .gt_stub {
+:where(#pjrzkehsnm) .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -773,7 +746,7 @@
   padding-right: 5px;
 }
 
-:where(#gsabdfgixs) .gt_stub_row_group {
+:where(#pjrzkehsnm) .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -787,11 +760,11 @@
   vertical-align: top;
 }
 
-:where(#gsabdfgixs) .gt_row_group_first td {
+:where(#pjrzkehsnm) .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-:where(#gsabdfgixs) .gt_summary_row {
+:where(#pjrzkehsnm) .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -801,16 +774,16 @@
   padding-right: 5px;
 }
 
-:where(#gsabdfgixs) .gt_first_summary_row {
+:where(#pjrzkehsnm) .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-:where(#gsabdfgixs) .gt_first_summary_row.thick {
+:where(#pjrzkehsnm) .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-:where(#gsabdfgixs) .gt_last_summary_row {
+:where(#pjrzkehsnm) .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -820,7 +793,7 @@
   border-bottom-color: #D3D3D3;
 }
 
-:where(#gsabdfgixs) .gt_grand_summary_row {
+:where(#pjrzkehsnm) .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -830,7 +803,7 @@
   padding-right: 5px;
 }
 
-:where(#gsabdfgixs) .gt_first_grand_summary_row {
+:where(#pjrzkehsnm) .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -840,11 +813,11 @@
   border-top-color: #D3D3D3;
 }
 
-:where(#gsabdfgixs) .gt_striped {
+:where(#pjrzkehsnm) .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-:where(#gsabdfgixs) .gt_table_body {
+:where(#pjrzkehsnm) .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -853,7 +826,7 @@
   border-bottom-color: #D3D3D3;
 }
 
-:where(#gsabdfgixs) .gt_footnotes {
+:where(#pjrzkehsnm) .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -867,7 +840,7 @@
   border-right-color: #D3D3D3;
 }
 
-:where(#gsabdfgixs) .gt_footnote {
+:where(#pjrzkehsnm) .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -876,7 +849,7 @@
   padding-right: 5px;
 }
 
-:where(#gsabdfgixs) .gt_sourcenotes {
+:where(#pjrzkehsnm) .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -890,7 +863,7 @@
   border-right-color: #D3D3D3;
 }
 
-:where(#gsabdfgixs) .gt_sourcenote {
+:where(#pjrzkehsnm) .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -898,60 +871,60 @@
   padding-right: 5px;
 }
 
-:where(#gsabdfgixs) .gt_left {
+:where(#pjrzkehsnm) .gt_left {
   text-align: left;
 }
 
-:where(#gsabdfgixs) .gt_center {
+:where(#pjrzkehsnm) .gt_center {
   text-align: center;
 }
 
-:where(#gsabdfgixs) .gt_right {
+:where(#pjrzkehsnm) .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-:where(#gsabdfgixs) .gt_font_normal {
+:where(#pjrzkehsnm) .gt_font_normal {
   font-weight: normal;
 }
 
-:where(#gsabdfgixs) .gt_font_bold {
+:where(#pjrzkehsnm) .gt_font_bold {
   font-weight: bold;
 }
 
-:where(#gsabdfgixs) .gt_font_italic {
+:where(#pjrzkehsnm) .gt_font_italic {
   font-style: italic;
 }
 
-:where(#gsabdfgixs) .gt_super {
+:where(#pjrzkehsnm) .gt_super {
   font-size: 65%;
 }
 
-:where(#gsabdfgixs) .gt_footnote_marks {
+:where(#pjrzkehsnm) .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-:where(#gsabdfgixs) .gt_asterisk {
+:where(#pjrzkehsnm) .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-:where(#gsabdfgixs) .gt_slash_mark {
+:where(#pjrzkehsnm) .gt_slash_mark {
   font-size: 0.7em;
   line-height: 0.7em;
   vertical-align: 0.15em;
 }
 
-:where(#gsabdfgixs) .gt_fraction_numerator {
+:where(#pjrzkehsnm) .gt_fraction_numerator {
   font-size: 0.6em;
   line-height: 0.6em;
   vertical-align: 0.45em;
 }
 
-:where(#gsabdfgixs) .gt_fraction_denominator {
+:where(#pjrzkehsnm) .gt_fraction_denominator {
   font-size: 0.6em;
   line-height: 0.6em;
   vertical-align: -0.05em;
@@ -966,8 +939,6 @@
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">Q_A</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">Q_0</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">Q_1</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">H_1</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">H_0</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">H_A</th>
     </tr>
   </thead>
@@ -977,40 +948,30 @@
 <td class="gt_row gt_right" style="background-color: #008080;">0.44</td>
 <td class="gt_row gt_right">0.08</td>
 <td class="gt_row gt_right" style="background-color: #008080;">0.44</td>
-<td class="gt_row gt_right">1.386183</td>
-<td class="gt_row gt_right">-3.589448</td>
 <td class="gt_row gt_right">1.386183</td></tr>
     <tr><td class="gt_row gt_right">1</td>
 <td class="gt_row gt_right">1</td>
 <td class="gt_row gt_right" style="background-color: #008080;">0.53</td>
 <td class="gt_row gt_right">0.11</td>
 <td class="gt_row gt_right" style="background-color: #008080;">0.53</td>
-<td class="gt_row gt_right">1.375445</td>
-<td class="gt_row gt_right">-3.663504</td>
 <td class="gt_row gt_right">1.375445</td></tr>
     <tr><td class="gt_row gt_right">0</td>
 <td class="gt_row gt_right">0</td>
 <td class="gt_row gt_right" style="background-color: #008080;">0.20</td>
 <td class="gt_row gt_right" style="background-color: #008080;">0.20</td>
 <td class="gt_row gt_right">0.69</td>
-<td class="gt_row gt_right">3.353887</td>
-<td class="gt_row gt_right">-1.424829</td>
 <td class="gt_row gt_right">-1.424829</td></tr>
     <tr><td class="gt_row gt_right">0</td>
 <td class="gt_row gt_right">1</td>
 <td class="gt_row gt_right" style="background-color: #008080;">0.59</td>
 <td class="gt_row gt_right">0.14</td>
 <td class="gt_row gt_right" style="background-color: #008080;">0.59</td>
-<td class="gt_row gt_right">1.506017</td>
-<td class="gt_row gt_right">-2.976216</td>
 <td class="gt_row gt_right">1.506017</td></tr>
     <tr><td class="gt_row gt_right">0</td>
 <td class="gt_row gt_right">0</td>
 <td class="gt_row gt_right" style="background-color: #008080;">0.12</td>
 <td class="gt_row gt_right" style="background-color: #008080;">0.12</td>
 <td class="gt_row gt_right">0.55</td>
-<td class="gt_row gt_right">2.124983</td>
-<td class="gt_row gt_right">-1.888903</td>
 <td class="gt_row gt_right">-1.888903</td></tr>
   </tbody>
   
@@ -1020,43 +981,53 @@
 </div>
 </div>
 </section>
+<section id="g-computation-ate" class="slide level2">
+<h2>g-computation ATE</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="fu">mean</span>(dat_tmle<span class="sc">$</span>Q_1<span class="sc">-</span>dat_tmle<span class="sc">$</span>Q_0)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>–</p>
+<p>Does not fully account for the differences between the individuals getting the treatment and those that didn’t</p>
+</section>
 <section id="step-2-estimate-the-probability-of-treatment" class="slide level2">
 <h2>Step 2: Estimate the probability of treatment</h2>
 <p>We want to estimate the probability of treatment (ie the propensity score).</p>
 <div class="cell">
-
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>g <span class="ot">&lt;-</span> <span class="fu">glm</span>(A_remote <span class="sc">~</span>  covar1 <span class="sc">+</span> covar2, <span class="at">family =</span> <span class="st">'binomial'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="section-6" class="slide level2">
-<h2></h2>
-<p>We use super learner again and use the results to calculate the ‘clever covariate’</p>
+<section id="calculate-a-clever-covariate" class="slide level2">
+<h2>Calculate a clever covariate</h2>
+<p>We use <code>g</code> to predict values and use the results to calculate the ‘clever covariate’</p>
 <ol type="1">
 <li>The inverse probability of receiving treatment.</li>
 <li>The negative inverse probability of not receiving treatment.</li>
 <li>If the observation was treated, the inverse probability of receiving treatment, and if they were not treated, the negative inverse probability of not receiving treatment. (This is the clever covariate, <code>H_A</code>)</li>
 </ol>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>g_w <span class="ot">&lt;-</span> <span class="fu">predict</span>(g)<span class="sc">$</span>pred <span class="sc">%&gt;%</span> </span>
-<span id="cb4-2"><a href="#cb4-2"></a>  <span class="fu">as.vector</span>() <span class="co"># Pr(A=1|W)</span></span>
-<span id="cb4-3"><a href="#cb4-3"></a>H_1 <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">/</span>g_w</span>
-<span id="cb4-4"><a href="#cb4-4"></a>H_0 <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">1</span><span class="sc">/</span>(<span class="dv">1</span><span class="sc">-</span>g_w) <span class="co"># Pr(A=0|W) is 1-Pr(A=1|W)</span></span>
-<span id="cb4-5"><a href="#cb4-5"></a>dat_tmle <span class="ot">&lt;-</span> <span class="co"># add clever covariate data to dat_tmle</span></span>
-<span id="cb4-6"><a href="#cb4-6"></a>  dat_tmle <span class="sc">%&gt;%</span></span>
-<span id="cb4-7"><a href="#cb4-7"></a>  <span class="fu">bind_cols</span>(</span>
-<span id="cb4-8"><a href="#cb4-8"></a>    <span class="at">H_1 =</span> H_1,</span>
-<span id="cb4-9"><a href="#cb4-9"></a>    <span class="at">H_0 =</span> H_0) <span class="sc">%&gt;%</span></span>
-<span id="cb4-10"><a href="#cb4-10"></a>  <span class="fu">mutate</span>(<span class="at">H_A =</span> <span class="fu">case_when</span>(A_remote <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> H_1, <span class="co"># if A is 1 (treated), assign H_1</span></span>
-<span id="cb4-11"><a href="#cb4-11"></a>                         A_remote <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> H_0))  <span class="co"># if A is 0 (not treated), assign H_0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>g_w <span class="ot">&lt;-</span> <span class="fu">predict</span>(g)<span class="sc">$</span>pred <span class="sc">%&gt;%</span> </span>
+<span id="cb7-2"><a href="#cb7-2"></a>  <span class="fu">as.vector</span>() <span class="co"># Pr(A=1|W)</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a>H_1 <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">/</span>g_w</span>
+<span id="cb7-4"><a href="#cb7-4"></a>H_0 <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">1</span><span class="sc">/</span>(<span class="dv">1</span><span class="sc">-</span>g_w) <span class="co"># Pr(A=0|W) is 1-Pr(A=1|W)</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a>dat_tmle <span class="ot">&lt;-</span> <span class="co"># add clever covariate data to dat_tmle</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a>  dat_tmle <span class="sc">%&gt;%</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a>  <span class="fu">bind_cols</span>(</span>
+<span id="cb7-8"><a href="#cb7-8"></a>    <span class="at">H_1 =</span> H_1,</span>
+<span id="cb7-9"><a href="#cb7-9"></a>    <span class="at">H_0 =</span> H_0) <span class="sc">%&gt;%</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a>  <span class="fu">mutate</span>(<span class="at">H_A =</span> <span class="fu">case_when</span>(A_remote <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> H_1, <span class="co"># if A is 1 (treated), assign H_1</span></span>
+<span id="cb7-11"><a href="#cb7-11"></a>                         A_remote <span class="sc">==</span> <span class="dv">0</span> <span class="sc">~</span> H_0))  <span class="co"># if A is 0 (not treated), assign H_0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-3-estimate-the-fluctuation-parameter" class="slide level2">
 <h2>Step 3: Estimate the Fluctuation Parameter</h2>
 <p>The point of this step is to solve an estimating equation for the efficient influence function (EIF) of our estimand of interest.</p>
-<p>Logit(True outcome) = logit(initial outcome estimate) + eps*clever covariate (H_A)</p>
+<p>Logit(True outcome) = logit(initial outcome estimate) + eps*H_A</p>
 <p>We can estimate eps using a logistic regression with one covariate (the clever covariate), no intercept and the initial outcome estimate as a fixed intercept (offset)</p>
-<p>glm(Y ~ -1 + offset(qlogis(Q_A)) + H_A, data=df , family=binomial)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">glm</span>(Y_abx <span class="sc">~</span> <span class="sc">-</span><span class="dv">1</span> <span class="sc">+</span> <span class="fu">offset</span>(<span class="fu">qlogis</span>(Q_A)) <span class="sc">+</span> H_A, <span class="at">data=</span>df , <span class="at">family=</span><span class="st">'binomial'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
-<section id="section-7" class="slide level2">
+<section id="section-3" class="slide level2">
 <h2></h2>
 <p>Step 2 is kind of equivalent to regressing the residuals from the initial outcome regression onto a covariate that is a function of the propensity score</p>
 <p>This means that if the initial model in step 1 was correctly specified then there is no signal in the residuals → epsilon will be small</p>
@@ -1064,14 +1035,18 @@
 </section>
 <section id="quick-recap" class="slide level2">
 <h2>Quick recap</h2>
-<p>In Step 1, we obtained initial estimates of the expected outcome using super learner. These estimates are optimized to estimate E[Y|A,W] (expected value of the outcome) not the ATE.</p>
+<p>In Step 1, we obtained initial estimates of the expected outcome. These estimates are optimized to estimate E[Y|A,W] (expected value of the outcome) not the ATE.</p>
 <p>We need to update those initial expected outcome estimates using information about the treatment mechanism, so we computed the expected probability of treatment, conditional on confounders, in Step 2.</p>
 <p>Step 3, we used quantities from Step 1 and Step 2 to solve an estimating equation for the EIF. This gave us an estimate of epsilon.</p>
 </section>
 <section id="step-4-update-the-initial-estimates-of-the-expected-outcome" class="slide level2">
 <h2>Step 4: update the initial estimates of the expected outcome</h2>
 <p>We are updating the estimates from step 1 using information from step 2 and 3. The size of epsilon determines the size of the update.</p>
-<p><span class="math inline">\(Q_A_updated = plogis(qlogis(Q_A) + eps*H_A)\)</span></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>Q_A_update <span class="ot">&lt;-</span> <span class="fu">plogis</span>(<span class="fu">qlogis</span>(Q_A) <span class="sc">+</span> eps<span class="sc">*</span>H_A) <span class="co"># updated expected outcome given treatment actually received</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>Q_1_update <span class="ot">&lt;-</span> <span class="fu">plogis</span>(<span class="fu">qlogis</span>(Q_1) <span class="sc">+</span> eps<span class="sc">*</span>H_1) <span class="co"># updated expected outcome for everyone receiving treatment</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a>Q_0_update <span class="ot">&lt;-</span> <span class="fu">plogis</span>(<span class="fu">qlogis</span>(Q_0) <span class="sc">+</span> eps<span class="sc">*</span>H_0) <span class="co"># updated expected outcome for everyone not receiving treatment</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <p>1. Update the expected outcomes of all observations, given the treatment they actually received and their baseline confounders. <code>Q_A_updated</code></p>
 <p>2. Update the expected outcomes, conditional on baseline confounders and everyone receiving the treatment. (<code>Q_1_updated</code>)</p>
 <p>3. Update the expected outcomes, conditional on baseline confounders and no one receiving the treatment. (<code>Q_0_updated</code>)</p>
@@ -1079,12 +1054,79 @@
 <section id="step-5-compute-the-ate" class="slide level2">
 <h2>Step 5: compute the ATE</h2>
 <p>Mean difference between the updated outcome estimates when everyone is treated vs when no one is treated</p>
-<p>ATE = Q_1_updated - Q_0_updated</p>
+<p>ATE = mean(Q_1_updated - Q_0_updated)</p>
+</section>
+<section id="steps-we-will-ignore" class="slide level2">
+<h2>Steps we will ignore</h2>
+<p>The standard errors</p>
+</section>
+<section id="background-image-httpsimages.unsplash.comphoto-1591453089816-0fbb971b454cixlibrb-4.0.3ixidmnwxmja3fdb8mhxwag90by1wywdlfhx8fgvufdb8fhx8autoformatfitcropw2940q80" class="slide level2">
+<h2>{background-image = “https://images.unsplash.com/photo-1591453089816-0fbb971b454c?ixlib=rb-4.0.3&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=crop&amp;w=2940&amp;q=80”}</h2>
+</section>
+<section id="super-learner" class="slide level2">
+<h2>Super learner</h2>
+<p>An ensemble machine learning that combines multiple learners (algorithms) and uses cross-validation to select the optimal ensemble (collection) of learners making a single new prediction algorithm This can either be one learner or a combination of the different learners</p>
+
+<img data-src="https://koalaverse.github.io/machine-learning-in-R/images/h2oEnsemble.png" style="width:16cm" class="r-stretch quarto-figure-center"></section>
+<section id="picking-your-learners" class="slide level2">
+<h2>Picking your learners</h2>
+<p>The learners should have a diverse set of learning strategies</p>
+<p>Pick learners based on</p>
+<ul>
+<li><p>Data types (eg add models that handle splines if you have continuous data)</p></li>
+<li><p>Number of predictors (if many then use learners that reduce the dimensionality)</p></li>
+<li><p>Number of learners depends on how good your computer is</p></li>
+</ul>
+<p>Take a set of models 4 models logistic, random forest, xgboost, polyspline</p>
+</section>
+<section id="sl3" class="slide level2">
+<h2><code>sl3</code></h2>
+<div class="cell">
+
+</div>
+</section>
+<section id="cross-validation" class="slide level2">
+<h2>Cross-validation</h2>
+<p>Create a cross validation set of your data (eg 5 folds)</p>
+<p>Train all the models on 4 out of the 5 data chunks using the fifth chunk to get predictions</p>
+<p>Repeat this until each chunk has been left out one time and you have a set of cross-validated predictions for the full data set for each model</p>
+</section>
+<section id="section-4" class="slide level2">
+<h2></h2>
+<p>pred_mod_a – predictions from the cross validation from model a pred_mod_b – predictions from the cross validation from model b pred_mod_c – predictions from the cross validation from model c pred_mod_d – predictions from the cross validation from model d</p>
+<p>These are our cross validated predictions</p>
+<p>Predictions on based data that was not used to train the model</p>
+</section>
+<section id="predict-the-outcome-using-the-cross-validated-predictions" class="slide level2">
+<h2>Predict the outcome using the cross-validated predictions</h2>
+<p>Use the cross-validated predictions to predict the outcome</p>
+<p>Y ~ a<em>pred_mod_a + b</em>pred_mod_b + c<em>pred_mod_c + d</em>pred_mod_d</p>
+<p>The model used is called a metalearner and the actual model can be anything! (default is a Non-Negative Least Squares)</p>
+</section>
+<section id="section-5" class="slide level2">
+<h2></h2>
+<p>Learners that did well will have a larger coefficient and therefore have more of a weight</p>
+<p>Y ~ 2<em>pred_mod_a + 0.5</em>pred_mod_b + 9<em>pred_mod_c + 3</em>pred_mod_d</p>
+<p>This is our super learner algorithm</p>
+</section>
+<section id="section-6" class="slide level2">
+<h2></h2>
+<p>Fit base learners (our 4 models) on the entire data set and get predictions. This is your new dataset.</p>
+<p>Plug that data into the super learner to get final predictions!</p>
+<p>The <code>sl3</code> package will do all of this for you</p>
 </section>
 <section id="keen-to-learn-more" class="slide level2">
 <h2>Keen to learn more?</h2>
+<p>TMLE</p>
 <ul>
 <li>https://www.khstats.com/blog/tmle/tutorial.html</li>
+<li>https://www.youtube.com/watch?v=8Q9dfW3oOi4&amp;list=PLy_CaFomwGGGH10tbq9zSyfHVrdklMaLe&amp;index=2</li>
+</ul>
+<p>Super learner</p>
+<ul>
+<li>https://youtu.be/1zT17HtvtF8</li>
+<li>https://www.youtube.com/watch?v=WYnjja8DKPg</li>
+<li>https://ui.adsabs.harvard.edu/abs/2022arXiv220406139P/abstract</li>
 </ul>
 <div class="footer footer-default">
 
@@ -1142,7 +1184,7 @@
         progress: true,
 
         // Display the page number of the current slide
-        slideNumber: false,
+        slideNumber: 'c/t',
 
         // 'all', 'print', or 'speaker'
         showSlideNumber: 'all',
