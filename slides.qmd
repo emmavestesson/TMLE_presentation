@@ -315,7 +315,7 @@ ATE = mean(Q_1\_updated - Q_0\_updated)
 The standard errors 
 
 
-## {background-image = "https://images.unsplash.com/photo-1591453089816-0fbb971b454c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2940&q=80"}
+## {background-image="https://images.unsplash.com/photo-1591453089816-0fbb971b454c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2940&q=80"}
 
 
 ## Super learner
@@ -323,26 +323,6 @@ The standard errors
 An ensemble machine learning that combines multiple learners (algorithms) and uses cross-validation to select the optimal ensemble (collection) of learners making a single new prediction algorithm This can either be one learner or a combination of the different learners
 
 [![](https://koalaverse.github.io/machine-learning-in-R/images/h2oEnsemble.png){width="16cm"}](https://koalaverse.github.io/machine-learning-in-R/images/h2oEnsemble.png)
-
-## Picking your learners
-
-The learners should have a diverse set of learning strategies
-
-Pick learners based on
-
--   Data types (eg add models that handle splines if you have continuous data)
-
--   Number of predictors (if many then use learners that reduce the dimensionality)
-
--   Number of learners depends on how good your computer is
-
-Take a set of models 4 models logistic, random forest, xgboost, polyspline
-
-## `sl3` 
-
-```{r}
-library(sl3)
-```
 
 ## Cross-validation
 
@@ -384,6 +364,99 @@ Plug that data into the super learner to get final predictions!
 
 The `sl3` package will do all of this for you
 
+
+## Picking your learners
+
+The learners should have a diverse set of learning strategies
+
+Pick learners based on
+
+-   Data types (eg add models that handle splines if you have continuous data)
+
+-   Number of predictors (if many then use learners that reduce the dimensionality)
+
+-   Number of learners depends on how good your computer is
+
+
+
+## `sl3` learners
+
+```{r}
+library(sl3)
+```
+Properties
+```{r}
+#| include: true
+#| eval: true
+#| echo: true
+
+sl3_list_properties()
+```
+
+##
+
+```{r}
+#| include: true
+#| eval: true
+#| echo: true
+
+sl3_list_learners(properties = 'binomial')
+```
+
+## Specify learners
+
+```{r}
+#| include: true
+#| eval: false
+#| echo: true
+
+glm_learner <- Lrnr_glm$new(family = "binomial")
+lasso_learner <- Lrnr_glmnet$new(family = "binomial")
+ridge_learner <- Lrnr_glmnet$new(alpha = 0, family = "binomial")
+
+ls_metalearner <- make_learner(Lrnr_nnls)
+sl_Y <- Lrnr_sl$new(
+  learners = list(glm_learner, lasso_learner, ridge_learner),
+  metalearner = ls_metalearner
+)
+sl_A <- Lrnr_sl$new(
+  learners = list(glm_learner, lasso_learner, ridge_learner),
+  metalearner = ls_metalearner
+)
+learner_list <- list(A = sl_A, Y = sl_Y)
+
+tmle_fit <- tmle3(ate_spec, washb_data, node_list, learner_list)
+
+```
+
+
+
+
+## Combine learners
+
+```{r}
+#| include: true
+#| eval: true
+#| echo: true
+
+my_stack <- Stack$new(glm_learner, lasso_learner, ridge_learner)
+my_stack
+```
+
+## define and train the super learner
+
+
+```{r}
+#| include: true
+#| eval: false
+#| echo: true
+
+sl <- Lrnr_sl$new(learners = stack, metalearner = Lrnr_nnls$new())
+sl_fit <- sl$train(task = task)
+sl_preds <- sl_fit$predict(task = task)
+```
+
+##
 
 ## Keen to learn more?
 
