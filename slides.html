@@ -7,9 +7,9 @@
 <link href="slides_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="slides_files/libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
 <link href="slides_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.1.251">
+  <meta name="generator" content="quarto-1.1.189">
 
-  <title>Antibiotic prescribing and remote consultations in primary care</title>
+  <title>Causal inference in R - a practical introduction to the tlverse</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -387,67 +387,82 @@
     <div class="slides">
 
 <section id="title-slide" class="center">
-  <h1 class="title">Antibiotic prescribing and remote consultations in primary care</h1>
+  <h1 class="title">Causal inference in R - a practical introduction to the tlverse</h1>
 </section>
 
-<section id="background" class="slide level2">
-<h2>Background</h2>
+<section id="about-me" class="slide level2">
+<h2>About me</h2>
+<ul>
+<li>Principal data analyst at the Health Foundation</li>
+<li>Part-time PhD student at the Institute of Child Health at UCL</li>
+<li>R-Ladies London organiser</li>
+<li>#rdogladies</li>
+</ul>
+</section>
+<section id="my-motivation-for-using-causal-inference" class="slide level2">
+<h2>My motivation for using causal inference</h2>
+<ul>
+<li><p>What is the effect on antibiotic prescribing of having a remote GP consultation compared to a face-to-face consultation?</p></li>
+<li><p>Important questions as the pandemic has increased the use of remote consultations in general practice</p></li>
+<li><p>We need to preserve antibiotics to minimise antibiotic resistance</p></li>
+<li><p>Patients have remote consultations might be different to those that have face-to-face consultations</p></li>
+</ul>
+</section>
+<section>
+<section id="different-types-of-causal-inference" class="title-slide slide level1 center">
+<h1>Different types of causal inference</h1>
+<ul>
+<li><p>Interrupted timeseries</p></li>
+<li><p>Difference-in-difference</p></li>
+<li><p>Regression discontinuity design</p></li>
+<li><p>Instrumental variables</p></li>
+<li><p>Matching <code>matchIt</code></p></li>
+<li><p>(Augmented) Inverse probability weighting <code>AIPW</code></p></li>
+<li><p>Targeted maximum likelihood estimation <code>tmle3</code></p></li>
+</ul>
+</section>
+<section id="about-this-topic" class="slide level2">
+<h2>About this topic</h2>
+<ul>
+<li>Machine learning has been all the rave - mainly focussed on prediction</li>
+<li>Causal inference is the process of determining the independent, actual effect of a particular phenomenon that is a component of a larger system</li>
+</ul>
+
+<img data-src="https://imgs.xkcd.com/comics/correlation.png" class="r-stretch"></section>
+<section id="section" class="slide level2">
+<h2></h2>
 <div class="cell">
 
 </div>
-<ul>
-<li><p>The use of remote consultations has increased significantly in recent years</p></li>
-<li><p>There are concerns that remote consultations could increase antibiotic prescribing rates</p></li>
-<li><p>Increased antibiotic prescribing could lead to increased antibiotic resistance</p></li>
-<li><p>Are patients seen remotely more likely to be prescribed antibiotics compared to those seen face-to-face?</p></li>
-</ul>
 </section>
-<section id="what-we-know-about-antibiotic-prescribing-in-primary-care" class="slide level2">
-<h2>What we know about antibiotic prescribing in primary care</h2>
-<ul>
-<li><p>Primary care is one of the main prescribers with GPs prescribing 71.4% of the total consumption of antibiotics in 2019</p></li>
-<li><p>Although antibiotic prescribing in primary care declined between 2014 and 2018, studies reveal that 20% of antibiotic prescribing is still inappropriate.</p></li>
-<li><p>Antibiotic prescribing is higher in areas of high deprivation, even after controlling for factors such as health need</p></li>
-<li><p>Patient age, comorbidities (eg asthma), deprivation</p></li>
-<li><p>Clinician role and experience, eg locums prescribed more than practice based GPs</p></li>
-</ul>
-</section>
-<section id="data" class="slide level2" data-background-color="aquamarine">
-<h2>Data</h2>
-<p>gj</p>
-</section>
-<section id="data-and-study-population" class="slide level2">
-<h2>Data and study population</h2>
-<ul>
-<li><p>CPRD Aurum data 1 May 2021 – 30 June 2022</p></li>
-<li><p>Patients with a GP consultation for <strong>acute respiratory infections</strong></p></li>
-<li><p>Code list based on previous studies can be subset into URTI, LRTI, sinusitis, otitis media and otitis externa</p></li>
-<li><p>BNF section 5.1 (excluding antileprotic and TB drugs)</p></li>
-<li><p>Only first GP ARI consultation in a 7-day period included (if a mix of consultation modes then assigned to the face-to-face group)</p></li>
-</ul>
-</section>
-<section id="variables" class="slide level2">
-<h2>Variables</h2>
-<ul>
-<li>Age, sex, deprivation, comorbidities, previous consultations, previous antibiotic use</li>
-<li>Practice size, rural/urban, previous antibiotic prescribing level, previous consultation rates</li>
-<li>Covid infection rates in regions</li>
-<li>GP role (eg locum, partner)</li>
-</ul>
-</section>
-<section id="methods" class="slide level2" data-background-color="aquamarine">
-<h2>Methods</h2>
-</section>
-<section>
-<section id="targeted-maximum-likelihood-estimation-tmle" class="title-slide slide level1 center">
-<h1>Targeted maximum likelihood estimation (TMLE)</h1>
+<section id="targeted-maximum-likelihood-tmle" class="slide level2">
+<h2>Targeted maximum likelihood (TMLE)</h2>
 <p>TMLE has two main parts</p>
 <ul>
-<li>Estimates the conditional probability of being exposed (remote consultation)</li>
-<li>Estimates the effect of the treatment on the outcome (antibiotics prescribed)</li>
+<li>Estimate the conditional probability of being exposed based on confounders that you have identified</li>
+<li>Estimate the expected value of the outcome using treatment and confounders as predictors the outcome</li>
 <li>Combines that to estimate the average treatment effect</li>
 </ul>
 <p>It is doubly robust so if you get either of those two right then your estimate is consistent</p>
+</section>
+<section id="causal-assumptions" class="slide level2">
+<h2>Causal assumptions</h2>
+<p>It is not enough to use a method that is suitable for causal inference to make causal claims</p>
+<ol type="1">
+<li><p>The stable treatment assumption the treatment status of any individual does not affect the potential outcomes of other individuals</p></li>
+<li><p>No unmeasured confounding. This means that all common causes of both the treatment and the outcome have been measured.</p></li>
+<li><p>Positivity. Within each strata of the set of covariates each individual has a nonzero probability of receiving either treatment.</p></li>
+</ol>
+</section></section>
+<section>
+<section id="section-1" class="title-slide slide level1 center">
+<h1></h1>
+
+<img data-src="tlverse_github.png" class="r-stretch"></section>
+<section id="ghj" class="slide level2">
+<h2>ghj</h2>
+<p>I’ll walk step-by-step through a basic version of the TMLE algorithm - estimating the mean difference in outcomes, adjusted for confounders, for a binary outcome and binary treatment.</p>
+<p>If causal assumptions are met, this is called the Average Treatment Effect (ATE), or the mean difference in outcomes in a world in which everyone had received the treatment compared to a world in which everyone had not.</p>
 </section>
 <section id="super-learner" class="slide level2">
 <h2>Super learner</h2>
@@ -471,7 +486,7 @@
 <p>Train all the models on 4 out of the 5 data chunks using the fifth chunk to get predictions</p>
 <p>Repeat this until each chunk has been left out one time and you have a set of cross-validated predictions for the full data set for each model</p>
 </section>
-<section id="section" class="slide level2">
+<section id="section-2" class="slide level2">
 <h2></h2>
 <p>pred_mod_a – predictions from the cross validation from model a pred_mod_b – predictions from the cross validation from model b pred_mod_c – predictions from the cross validation from model c pred_mod_d – predictions from the cross validation from model d</p>
 <p>These are our cross validated predictions</p>
@@ -483,13 +498,13 @@
 <p>Y ~ a<em>pred_mod_a + b</em>pred_mod_b + c<em>pred_mod_c + d</em>pred_mod_d</p>
 <p>The model used is called a metalearner and the actual model can be anything! (default is a Non-Negative Least Squares)</p>
 </section>
-<section id="section-1" class="slide level2">
+<section id="section-3" class="slide level2">
 <h2></h2>
 <p>Learners that did well will have a larger coefficient and therefore have more of a weight</p>
 <p>Y ~ 2<em>pred_mod_a + 0.5</em>pred_mod_b + 9<em>pred_mod_c + 3</em>pred_mod_d</p>
 <p>This is our super learner algorithm</p>
 </section>
-<section id="section-2" class="slide level2">
+<section id="section-4" class="slide level2">
 <h2></h2>
 <p>Fit base learners (our 4 models) on the entire data set and get predictions. This is your new dataset.</p>
 <p>Plug that data into the super learner to get final predictions!</p>
@@ -503,7 +518,7 @@
 
 </div>
 </section>
-<section id="section-3" class="slide level2">
+<section id="section-5" class="slide level2">
 <h2></h2>
 <p>We then use that model to predict what the estimated outcome would be if</p>
 <div class="panel-tabset">
@@ -539,12 +554,12 @@
 <div class="cell">
 <div class="cell-output-display">
 
-<div id="nusmkitwzu" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="gsabdfgixs" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-:where(#nusmkitwzu) .gt_table {
+:where(#gsabdfgixs) .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -569,7 +584,7 @@
   border-left-color: #D3D3D3;
 }
 
-:where(#nusmkitwzu) .gt_heading {
+:where(#gsabdfgixs) .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -581,7 +596,7 @@
   border-right-color: #D3D3D3;
 }
 
-:where(#nusmkitwzu) .gt_title {
+:where(#gsabdfgixs) .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -593,7 +608,7 @@
   border-bottom-width: 0;
 }
 
-:where(#nusmkitwzu) .gt_subtitle {
+:where(#gsabdfgixs) .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -605,13 +620,13 @@
   border-top-width: 0;
 }
 
-:where(#nusmkitwzu) .gt_bottom_border {
+:where(#gsabdfgixs) .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-:where(#nusmkitwzu) .gt_col_headings {
+:where(#gsabdfgixs) .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -626,7 +641,7 @@
   border-right-color: #D3D3D3;
 }
 
-:where(#nusmkitwzu) .gt_col_heading {
+:where(#gsabdfgixs) .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -646,7 +661,7 @@
   overflow-x: hidden;
 }
 
-:where(#nusmkitwzu) .gt_column_spanner_outer {
+:where(#gsabdfgixs) .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -658,15 +673,15 @@
   padding-right: 4px;
 }
 
-:where(#nusmkitwzu) .gt_column_spanner_outer:first-child {
+:where(#gsabdfgixs) .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-:where(#nusmkitwzu) .gt_column_spanner_outer:last-child {
+:where(#gsabdfgixs) .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-:where(#nusmkitwzu) .gt_column_spanner {
+:where(#gsabdfgixs) .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -678,7 +693,7 @@
   width: 100%;
 }
 
-:where(#nusmkitwzu) .gt_group_heading {
+:where(#gsabdfgixs) .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -703,7 +718,7 @@
   vertical-align: middle;
 }
 
-:where(#nusmkitwzu) .gt_empty_group_heading {
+:where(#gsabdfgixs) .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -718,15 +733,15 @@
   vertical-align: middle;
 }
 
-:where(#nusmkitwzu) .gt_from_md > :first-child {
+:where(#gsabdfgixs) .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-:where(#nusmkitwzu) .gt_from_md > :last-child {
+:where(#gsabdfgixs) .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-:where(#nusmkitwzu) .gt_row {
+:where(#gsabdfgixs) .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -745,7 +760,7 @@
   overflow-x: hidden;
 }
 
-:where(#nusmkitwzu) .gt_stub {
+:where(#gsabdfgixs) .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -758,7 +773,7 @@
   padding-right: 5px;
 }
 
-:where(#nusmkitwzu) .gt_stub_row_group {
+:where(#gsabdfgixs) .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -772,11 +787,11 @@
   vertical-align: top;
 }
 
-:where(#nusmkitwzu) .gt_row_group_first td {
+:where(#gsabdfgixs) .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-:where(#nusmkitwzu) .gt_summary_row {
+:where(#gsabdfgixs) .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -786,16 +801,16 @@
   padding-right: 5px;
 }
 
-:where(#nusmkitwzu) .gt_first_summary_row {
+:where(#gsabdfgixs) .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-:where(#nusmkitwzu) .gt_first_summary_row.thick {
+:where(#gsabdfgixs) .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-:where(#nusmkitwzu) .gt_last_summary_row {
+:where(#gsabdfgixs) .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -805,7 +820,7 @@
   border-bottom-color: #D3D3D3;
 }
 
-:where(#nusmkitwzu) .gt_grand_summary_row {
+:where(#gsabdfgixs) .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -815,7 +830,7 @@
   padding-right: 5px;
 }
 
-:where(#nusmkitwzu) .gt_first_grand_summary_row {
+:where(#gsabdfgixs) .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -825,11 +840,11 @@
   border-top-color: #D3D3D3;
 }
 
-:where(#nusmkitwzu) .gt_striped {
+:where(#gsabdfgixs) .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-:where(#nusmkitwzu) .gt_table_body {
+:where(#gsabdfgixs) .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -838,7 +853,7 @@
   border-bottom-color: #D3D3D3;
 }
 
-:where(#nusmkitwzu) .gt_footnotes {
+:where(#gsabdfgixs) .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -852,7 +867,7 @@
   border-right-color: #D3D3D3;
 }
 
-:where(#nusmkitwzu) .gt_footnote {
+:where(#gsabdfgixs) .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -861,7 +876,7 @@
   padding-right: 5px;
 }
 
-:where(#nusmkitwzu) .gt_sourcenotes {
+:where(#gsabdfgixs) .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -875,7 +890,7 @@
   border-right-color: #D3D3D3;
 }
 
-:where(#nusmkitwzu) .gt_sourcenote {
+:where(#gsabdfgixs) .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -883,79 +898,77 @@
   padding-right: 5px;
 }
 
-:where(#nusmkitwzu) .gt_left {
+:where(#gsabdfgixs) .gt_left {
   text-align: left;
 }
 
-:where(#nusmkitwzu) .gt_center {
+:where(#gsabdfgixs) .gt_center {
   text-align: center;
 }
 
-:where(#nusmkitwzu) .gt_right {
+:where(#gsabdfgixs) .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-:where(#nusmkitwzu) .gt_font_normal {
+:where(#gsabdfgixs) .gt_font_normal {
   font-weight: normal;
 }
 
-:where(#nusmkitwzu) .gt_font_bold {
+:where(#gsabdfgixs) .gt_font_bold {
   font-weight: bold;
 }
 
-:where(#nusmkitwzu) .gt_font_italic {
+:where(#gsabdfgixs) .gt_font_italic {
   font-style: italic;
 }
 
-:where(#nusmkitwzu) .gt_super {
+:where(#gsabdfgixs) .gt_super {
   font-size: 65%;
 }
 
-:where(#nusmkitwzu) .gt_footnote_marks {
+:where(#gsabdfgixs) .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-:where(#nusmkitwzu) .gt_asterisk {
+:where(#gsabdfgixs) .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-:where(#nusmkitwzu) .gt_indent_1 {
-  text-indent: 5px;
+:where(#gsabdfgixs) .gt_slash_mark {
+  font-size: 0.7em;
+  line-height: 0.7em;
+  vertical-align: 0.15em;
 }
 
-:where(#nusmkitwzu) .gt_indent_2 {
-  text-indent: 10px;
+:where(#gsabdfgixs) .gt_fraction_numerator {
+  font-size: 0.6em;
+  line-height: 0.6em;
+  vertical-align: 0.45em;
 }
 
-:where(#nusmkitwzu) .gt_indent_3 {
-  text-indent: 15px;
-}
-
-:where(#nusmkitwzu) .gt_indent_4 {
-  text-indent: 20px;
-}
-
-:where(#nusmkitwzu) .gt_indent_5 {
-  text-indent: 25px;
+:where(#gsabdfgixs) .gt_fraction_denominator {
+  font-size: 0.6em;
+  line-height: 0.6em;
+  vertical-align: -0.05em;
 }
 </style>
 <table class="gt_table">
   
   <thead class="gt_col_headings">
     <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col">Y_abx</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col">A_remote</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col">Q_A</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col">Q_0</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col">Q_1</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col">H_1</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col">H_0</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col">H_A</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">Y_abx</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">A_remote</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">Q_A</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">Q_0</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">Q_1</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">H_1</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">H_0</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1">H_A</th>
     </tr>
   </thead>
   <tbody class="gt_table_body">
@@ -1014,7 +1027,7 @@
 
 </div>
 </section>
-<section id="section-4" class="slide level2">
+<section id="section-6" class="slide level2">
 <h2></h2>
 <p>We use super learner again and use the results to calculate the ‘clever covariate’</p>
 <ol type="1">
@@ -1043,7 +1056,7 @@
 <p>We can estimate eps using a logistic regression with one covariate (the clever covariate), no intercept and the initial outcome estimate as a fixed intercept (offset)</p>
 <p>glm(Y ~ -1 + offset(qlogis(Q_A)) + H_A, data=df , family=binomial)</p>
 </section>
-<section id="section-5" class="slide level2">
+<section id="section-7" class="slide level2">
 <h2></h2>
 <p>Step 2 is kind of equivalent to regressing the residuals from the initial outcome regression onto a covariate that is a function of the propensity score</p>
 <p>This means that if the initial model in step 1 was correctly specified then there is no signal in the residuals → epsilon will be small</p>
@@ -1058,41 +1071,21 @@
 <section id="step-4-update-the-initial-estimates-of-the-expected-outcome" class="slide level2">
 <h2>Step 4: update the initial estimates of the expected outcome</h2>
 <p>We are updating the estimates from step 1 using information from step 2 and 3. The size of epsilon determines the size of the update.</p>
-<p>Q_A_updated = plogis(qlogis(Q_A) + eps*H_A) 1. Update the expected outcomes of all observations, given the treatment they actually received and their baseline confounders. Q_A_updated 2. Update the expected outcomes, conditional on baseline confounders and everyone receiving the treatment. (Q_1_updated) 3. Update the expected outcomes, conditional on baseline confounders and no one receiving the treatment. (Q_0_updated)</p>
+<p><span class="math inline">\(Q_A_updated = plogis(qlogis(Q_A) + eps*H_A)\)</span></p>
+<p>1. Update the expected outcomes of all observations, given the treatment they actually received and their baseline confounders. <code>Q_A_updated</code></p>
+<p>2. Update the expected outcomes, conditional on baseline confounders and everyone receiving the treatment. (<code>Q_1_updated</code>)</p>
+<p>3. Update the expected outcomes, conditional on baseline confounders and no one receiving the treatment. (<code>Q_0_updated</code>)</p>
 </section>
 <section id="step-5-compute-the-ate" class="slide level2">
 <h2>Step 5: compute the ATE</h2>
 <p>Mean difference between the updated outcome estimates when everyone is treated vs when no one is treated</p>
 <p>ATE = Q_1_updated - Q_0_updated</p>
 </section>
-<section id="results" class="slide level2">
-<h2>Results</h2>
+<section id="keen-to-learn-more" class="slide level2">
+<h2>Keen to learn more?</h2>
 <ul>
-<li><p>There were 6598 face-to-face and 6124 remote consultations (total 12,722)</p></li>
-<li><p>15% of the face-to-face consultations were of mixed mode</p></li>
-<li><p>Antibiotics were prescribed in 50% of face-to-face/mixed consultations compared to 45% of remote consultations</p></li>
-<li><p>There is substantial variation in the use of remote consultations for different respiratory infections and also in the proportion of consultations leading antibiotics being prescribed. No clear correlation between % remote and % antibiotics prescribed</p></li>
+<li>https://www.khstats.com/blog/tmle/tutorial.html</li>
 </ul>
-</section>
-<section id="discussion" class="slide level2">
-<h2>Discussion</h2>
-<ul>
-<li>Not all infection types are likely to be seen remotely</li>
-<li>Reassuring that there is no large difference in antibiotic prescribing between remote and face-to-face consultations but this does not mean that there is no over-prescribing or missed prescribing</li>
-<li>15% of those in the face-to-face group had a mix of consultation modes so were seen multiple times. The mixed mode group had a lower crude antibiotic prescribing rate than face-to-face only or remote only</li>
-<li>Re-run analysis excluding the mixed mode group</li>
-<li>data quality is an issue</li>
-</ul>
-</section>
-<section id="sensitivity-analysisadditional-checks" class="slide level2">
-<h2>Sensitivity analysis/additional checks</h2>
-<p>We are likely underestimating remote consultations. Randomly reassign 10% of face-to-face and rerun model multiple times</p>
-<p>Not all consultations are properly coded so we will be missing some respiratory infections</p>
-<p>Identify antibiotics most likely prescribed for respiratory infections Look at % of consultations getting those antibiotics that were coded as respiratory infections</p>
-</section>
-<section id="thank-you" class="slide level2">
-<h2>Thank you</h2>
-<p>Ofran Almossawi Kaat de Corte</p>
 <div class="footer footer-default">
 
 </div>

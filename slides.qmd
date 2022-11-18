@@ -1,5 +1,5 @@
 ---
-title: "Causal inference in R "
+title: "Causal inference in R - a practical introduction to the tlverse"
 format: revealjs
 editor: visual
 ---
@@ -11,22 +11,17 @@ editor: visual
 -   R-Ladies London organiser
 -   #rdogladies
 
-## About this topic
-
--   Machine learning has been all the rave - mainly focussed on prediction
--   Causal inference is the process of determining the independent, actual effect of a particular phenomenon that is a component of a larger system
-
-![](https://imgs.xkcd.com/comics/correlation.png)
-
 ## My motivation for using causal inference
 
 -   What is the effect on antibiotic prescribing of having a remote GP consultation compared to a face-to-face consultation?
 
 -   Important questions as the pandemic has increased the use of remote consultations in general practice
 
--   we need to preserve antibiotics to minimise antibiotic resistance
+-   We need to preserve antibiotics to minimise antibiotic resistance
 
--   Patients have remote consultations might be different to those that have face-to-face consultations \## Many different types of causal inference
+-   Patients have remote consultations might be different to those that have face-to-face consultations
+
+# Different types of causal inference
 
 -   Interrupted timeseries
 
@@ -34,19 +29,22 @@ editor: visual
 
 -   Regression discontinuity design
 
--   Matching
+-   Instrumental variables
 
--   Inverse probability weighting
+-   Matching `matchIt`
 
--   Targeted maximum likelihood
+-   (Augmented) Inverse probability weighting `AIPW`
 
-## Causal assumptions
+-   Targeted maximum likelihood estimation `tmle3`
 
-1.  The stable treatment assumption (SUTVA) the treatment status of any individual does not affect the potential outcomes of other individuals
+## About this topic
 
-2.  No unmeasured confounding. This means that all common causes of both the treatment and the outcome have been measured.
+-   Machine learning has been all the rave - mainly focussed on prediction
+-   Causal inference is the process of determining the independent, actual effect of a particular phenomenon that is a component of a larger system
 
-3.  Positivity. Within each strata of the set of covariates each individual has a nonzero probability of receiving either treatment.
+![](https://imgs.xkcd.com/comics/correlation.png)
+
+## 
 
 ```{r}
 library(tidyverse)
@@ -62,17 +60,27 @@ g <- readRDS(here::here('data', 'g.RDS'))
 
 ```
 
-# Targeted maximum likelihood estimation (TMLE)
+## Targeted maximum likelihood (TMLE)
 
 TMLE has two main parts
 
--   Estimate the conditional probability of being exposed
+-   Estimate the conditional probability of being exposed based on confounders that you have identified
 -   Estimate the expected value of the outcome using treatment and confounders as predictors the outcome
 -   Combines that to estimate the average treatment effect
 
 It is doubly robust so if you get either of those two right then your estimate is consistent
 
-#
+## Causal assumptions
+
+It is not enough to use a method that is suitable for causal inference to make causal claims
+
+1.  The stable treatment assumption the treatment status of any individual does not affect the potential outcomes of other individuals
+
+2.  No unmeasured confounding. This means that all common causes of both the treatment and the outcome have been measured.
+
+3.  Positivity. Within each strata of the set of covariates each individual has a nonzero probability of receiving either treatment.
+
+# 
 
 ![](tlverse_github.png)
 
@@ -301,7 +309,13 @@ Step 3, we used quantities from Step 1 and Step 2 to solve an estimating equatio
 
 We are updating the estimates from step 1 using information from step 2 and 3. The size of epsilon determines the size of the update.
 
-Q_A\_updated = plogis(qlogis(Q_A) + eps\*H_A) 1. Update the expected outcomes of all observations, given the treatment they actually received and their baseline confounders. Q_A\_updated 2. Update the expected outcomes, conditional on baseline confounders and everyone receiving the treatment. (Q_1\_updated) 3. Update the expected outcomes, conditional on baseline confounders and no one receiving the treatment. (Q_0\_updated)
+$Q_A_updated = plogis(qlogis(Q_A) + eps*H_A)$
+
+1\. Update the expected outcomes of all observations, given the treatment they actually received and their baseline confounders. `Q_A_updated`
+
+2\. Update the expected outcomes, conditional on baseline confounders and everyone receiving the treatment. (`Q_1_updated`)
+
+3\. Update the expected outcomes, conditional on baseline confounders and no one receiving the treatment. (`Q_0_updated`)
 
 ## Step 5: compute the ATE
 
