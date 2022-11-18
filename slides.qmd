@@ -1,6 +1,8 @@
 ---
 title: "Causal inference in R - a practical introduction to the tlverse"
-format: revealjs
+format: 
+  revealjs:
+    slide-number: c/t 
 editor: visual
 ---
 
@@ -11,6 +13,13 @@ editor: visual
 -   R-Ladies London organiser
 -   #rdogladies
 
+## Content
+
+-   My origin story
+-   A brief theoretical introduction to causal inference
+-   Theory of TMLE
+-   Finally some code! (`sl3` and `tmle3`)
+
 ## My motivation for using causal inference
 
 -   What is the effect on antibiotic prescribing of having a remote GP consultation compared to a face-to-face consultation?
@@ -19,7 +28,23 @@ editor: visual
 
 -   We need to preserve antibiotics to minimise antibiotic resistance
 
--   Patients have remote consultations might be different to those that have face-to-face consultations
+
+
+## 
+::: {layout-ncol=2}
+![](https://images.unsplash.com/photo-1592422207043-9e19520a698e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHlvdW5nJTIwcGhvbmV8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60)
+
+![](https://images.unsplash.com/photo-1498757581981-8ddb3c0b9b07?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=688&q=80)
+
+:::
+
+
+## About this topic
+
+-   Machine learning has been all the rave - mainly focussed on prediction
+-   Causal inference is used to determe the independent, actual effect of a treatment on a given outcome
+
+![](https://imgs.xkcd.com/comics/correlation.png)
 
 # Different types of causal inference
 
@@ -36,15 +61,6 @@ editor: visual
 -   (Augmented) Inverse probability weighting `AIPW`
 
 -   Targeted maximum likelihood estimation `tmle3`
-
-## About this topic
-
--   Machine learning has been all the rave - mainly focussed on prediction
--   Causal inference is the process of determining the independent, actual effect of a particular phenomenon that is a component of a larger system
-
-![](https://imgs.xkcd.com/comics/correlation.png)
-
-## 
 
 ```{r}
 library(tidyverse)
@@ -74,95 +90,39 @@ It is doubly robust so if you get either of those two right then your estimate i
 
 It is not enough to use a method that is suitable for causal inference to make causal claims
 
+::: incremental
 1.  The stable treatment assumption the treatment status of any individual does not affect the potential outcomes of other individuals
 
 2.  No unmeasured confounding. This means that all common causes of both the treatment and the outcome have been measured.
 
 3.  Positivity. Within each strata of the set of covariates each individual has a nonzero probability of receiving either treatment.
+:::
 
 # 
 
 ![](tlverse_github.png)
 
-## ghj
+## Toy example
 
-I'll walk step-by-step through a basic version of the TMLE algorithm - estimating the mean difference in outcomes, adjusted for confounders, for a binary outcome and binary treatment.
+Basic version of the TMLE algorithm - estimating the mean difference in outcomes, adjusted for confounders, for a binary outcome and binary treatment.
 
 If causal assumptions are met, this is called the Average Treatment Effect (ATE), or the mean difference in outcomes in a world in which everyone had received the treatment compared to a world in which everyone had not.
 
-## Super learner
 
-An ensemble machine learning that combines multiple learners (algorithms) and uses cross-validation to select the optimal ensemble (collection) of learners making a single new prediction algorithm This can either be one learner or a combination of the different learners
-
-[![](https://koalaverse.github.io/machine-learning-in-R/images/h2oEnsemble.png){width="16cm"}](https://koalaverse.github.io/machine-learning-in-R/images/h2oEnsemble.png)
-
-## Picking your learners
-
-The learners should have a diverse set of learning strategies
-
-Pick learners based on
-
--   Data types (eg add models that handle splines if you have continuous data)
-
--   Number of predictors (if many then use learners that reduce the dimensionality)
-
--   Number of learners depends on how good your computer is
-
-Take a set of models 4 models logistic, random forest, xgboost, polyspline
-
-## Cross-validation
-
-Create a cross validation set of your data (eg 5 folds)
-
-Train all the models on 4 out of the 5 data chunks using the fifth chunk to get predictions
-
-Repeat this until each chunk has been left out one time and you have a set of cross-validated predictions for the full data set for each model
-
-## 
-
-pred_mod_a -- predictions from the cross validation from model a pred_mod_b -- predictions from the cross validation from model b pred_mod_c -- predictions from the cross validation from model c pred_mod_d -- predictions from the cross validation from model d
-
-These are our cross validated predictions
-
-Predictions on based data that was not used to train the model
-
-## Predict the outcome using the cross-validated predictions
-
-Use the cross-validated predictions to predict the outcome
-
-Y \~ a*pred_mod_a + b*pred_mod_b + c*pred_mod_c + d*pred_mod_d
-
-The model used is called a metalearner and the actual model can be anything! (default is a Non-Negative Least Squares)
-
-## 
-
-Learners that did well will have a larger coefficient and therefore have more of a weight
-
-Y \~ 2*pred_mod_a + 0.5*pred_mod_b + 9*pred_mod_c + 3*pred_mod_d
-
-This is our super learner algorithm
-
-## 
-
-Fit base learners (our 4 models) on the entire data set and get predictions. This is your new dataset.
-
-Plug that data into the super learner to get final predictions!
-
-The `sl3` package will do all of this for you
 
 ## Step 1: estimate the expected value of the outcome
 
-There is a function Q which takes A (treatment) and W (covariates) as inputs and return the conditional expectation of Y (outcome).
 
-We want to model the outcome (Y_abx). In the TMLE literature this is referred to Q, a function that takes A_remote and W (covariates) as inputs. We estimate Q using superlearner.
 
-```{r, eval=FALSE}
-Q <- SuperLearner(Y = Y, # Y is the outcome vector
-                  X = W_A, # W_A is the matrix of age, asthma, male,  and A
-                  family=binomial(), # specify we have a binary outcome
-                  SL.library = sl_libs) 
-
+```{r}
+#| include: true
+#| eval: false
+#| echo: true
+Q <- glm(Y_abx ~ A_remote + covar1 + covar2, family = 'binomial')
 ```
+
+
+`
 
 ## 
 
@@ -216,6 +176,7 @@ Q_0 <- predict(Q, newdata = W_A0)$pred %>%
 dat_tmle <- readRDS(here::here('data', 'dat_tmle.RDS'))
 dat_tmle %>%
   slice_head(n = 5) %>%  
+    select(-c(H_1, H_0)) %>% 
   gt() %>% 
   fmt_number(columns = c(Q_A, Q_0, Q_1)) %>% 
   tab_style(
@@ -238,24 +199,33 @@ dat_tmle %>%
 
 ```
 
+## g-computation ATE
+```{r}
+#| include: true
+#| eval: false
+#| echo: true
+mean(dat_tmle$Q_1-dat_tmle$Q_0)
+```
+--
+
+Does not fully account for the differences between the individuals getting the treatment and those that didn't 
+
 ## Step 2: Estimate the probability of treatment
 
 We want to estimate the probability of treatment (ie the propensity score).
 
-```{r, eval=FALSE}
-A <- dat_obs$A_remote
-W <- dat_obs %>% 
-  select(-Y_abx, -A_remote) # matrix of predictors that only contains the confounders age, asthma and male
-g <- SuperLearner(Y = A, # outcome is the A (treatment) vector
-                  X = W, # W is a matrix of predictors
-                  family=binomial(), # treatment is a binomial outcome
-                  SL.library=sl_libs) # using same candidate learners; could use different learners
 
+```{r}
+#| include: true
+#| eval: false
+#| echo: true
+g <- glm(A_remote ~  covar1 + covar2, family = 'binomial')
 ```
 
-## 
 
-We use super learner again and use the results to calculate the 'clever covariate'
+## Calculate a clever covariate
+
+We use `g` to predict values and use the results to calculate the 'clever covariate'
 
 1.  The inverse probability of receiving treatment.
 2.  The negative inverse probability of not receiving treatment.
@@ -283,11 +253,19 @@ dat_tmle <- # add clever covariate data to dat_tmle
 
 The point of this step is to solve an estimating equation for the efficient influence function (EIF) of our estimand of interest.
 
-Logit(True outcome) = logit(initial outcome estimate) + eps\*clever covariate (H_A)
+Logit(True outcome) = logit(initial outcome estimate) + eps*H_A
 
 We can estimate eps using a logistic regression with one covariate (the clever covariate), no intercept and the initial outcome estimate as a fixed intercept (offset)
 
-glm(Y \~ -1 + offset(qlogis(Q_A)) + H_A, data=df , family=binomial)
+```{r}
+#| include: true
+#| eval: false
+#| echo: true
+
+
+glm(Y_abx ~ -1 + offset(qlogis(Q_A)) + H_A, data=df , family='binomial')
+```
+
 
 ## 
 
@@ -299,7 +277,7 @@ Strong residual confounding → large epsilon → large update Weak residual con
 
 ## Quick recap
 
-In Step 1, we obtained initial estimates of the expected outcome using super learner. These estimates are optimized to estimate E\[Y\|A,W\] (expected value of the outcome) not the ATE.
+In Step 1, we obtained initial estimates of the expected outcome. These estimates are optimized to estimate E\[Y\|A,W\] (expected value of the outcome) not the ATE.
 
 We need to update those initial expected outcome estimates using information about the treatment mechanism, so we computed the expected probability of treatment, conditional on confounders, in Step 2.
 
@@ -309,7 +287,16 @@ Step 3, we used quantities from Step 1 and Step 2 to solve an estimating equatio
 
 We are updating the estimates from step 1 using information from step 2 and 3. The size of epsilon determines the size of the update.
 
-$Q_A_updated = plogis(qlogis(Q_A) + eps*H_A)$
+```{r}
+#| include: true
+#| eval: false
+#| echo: true
+
+Q_A_update <- plogis(qlogis(Q_A) + eps*H_A) # updated expected outcome given treatment actually received
+Q_1_update <- plogis(qlogis(Q_1) + eps*H_1) # updated expected outcome for everyone receiving treatment
+Q_0_update <- plogis(qlogis(Q_0) + eps*H_0) # updated expected outcome for everyone not receiving treatment
+```
+
 
 1\. Update the expected outcomes of all observations, given the treatment they actually received and their baseline confounders. `Q_A_updated`
 
@@ -321,8 +308,92 @@ $Q_A_updated = plogis(qlogis(Q_A) + eps*H_A)$
 
 Mean difference between the updated outcome estimates when everyone is treated vs when no one is treated
 
-ATE = Q_1\_updated - Q_0\_updated
+ATE = mean(Q_1\_updated - Q_0\_updated)
+
+## Steps we will ignore
+
+The standard errors 
+
+
+## {background-image = "https://images.unsplash.com/photo-1591453089816-0fbb971b454c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2940&q=80"}
+
+
+## Super learner
+
+An ensemble machine learning that combines multiple learners (algorithms) and uses cross-validation to select the optimal ensemble (collection) of learners making a single new prediction algorithm This can either be one learner or a combination of the different learners
+
+[![](https://koalaverse.github.io/machine-learning-in-R/images/h2oEnsemble.png){width="16cm"}](https://koalaverse.github.io/machine-learning-in-R/images/h2oEnsemble.png)
+
+## Picking your learners
+
+The learners should have a diverse set of learning strategies
+
+Pick learners based on
+
+-   Data types (eg add models that handle splines if you have continuous data)
+
+-   Number of predictors (if many then use learners that reduce the dimensionality)
+
+-   Number of learners depends on how good your computer is
+
+Take a set of models 4 models logistic, random forest, xgboost, polyspline
+
+## `sl3` 
+
+```{r}
+library(sl3)
+```
+
+## Cross-validation
+
+Create a cross validation set of your data (eg 5 folds)
+
+Train all the models on 4 out of the 5 data chunks using the fifth chunk to get predictions
+
+Repeat this until each chunk has been left out one time and you have a set of cross-validated predictions for the full data set for each model
+
+## 
+
+pred_mod_a -- predictions from the cross validation from model a pred_mod_b -- predictions from the cross validation from model b pred_mod_c -- predictions from the cross validation from model c pred_mod_d -- predictions from the cross validation from model d
+
+These are our cross validated predictions
+
+Predictions on based data that was not used to train the model
+
+## Predict the outcome using the cross-validated predictions
+
+Use the cross-validated predictions to predict the outcome
+
+Y \~ a*pred_mod_a + b*pred_mod_b + c*pred_mod_c + d*pred_mod_d
+
+The model used is called a metalearner and the actual model can be anything! (default is a Non-Negative Least Squares)
+
+## 
+
+Learners that did well will have a larger coefficient and therefore have more of a weight
+
+Y \~ 2*pred_mod_a + 0.5*pred_mod_b + 9*pred_mod_c + 3*pred_mod_d
+
+This is our super learner algorithm
+
+## 
+
+Fit base learners (our 4 models) on the entire data set and get predictions. This is your new dataset.
+
+Plug that data into the super learner to get final predictions!
+
+The `sl3` package will do all of this for you
+
 
 ## Keen to learn more?
 
+TMLE
+
 -   https://www.khstats.com/blog/tmle/tutorial.html
+-   https://www.youtube.com/watch?v=8Q9dfW3oOi4&list=PLy_CaFomwGGGH10tbq9zSyfHVrdklMaLe&index=2
+
+Super learner
+
+-   https://youtu.be/1zT17HtvtF8
+-   https://www.youtube.com/watch?v=WYnjja8DKPg
+-   https://ui.adsabs.harvard.edu/abs/2022arXiv220406139P/abstract
