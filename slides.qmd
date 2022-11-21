@@ -3,6 +3,7 @@ title: "Causal inference in R - a practical introduction to the tlverse"
 format: 
   revealjs:
     slide-number: c/t 
+    theme: moon
 editor: visual
 ---
 
@@ -206,7 +207,6 @@ dat_tmle %>%
 #| echo: true
 mean(dat_tmle$Q_1-dat_tmle$Q_0)
 ```
---
 
 Does not fully account for the differences between the individuals getting the treatment and those that didn't 
 
@@ -268,20 +268,24 @@ glm(Y_abx ~ -1 + offset(qlogis(Q_A)) + H_A, data=df , family='binomial')
 
 
 ## 
-
+::: incremental
 Step 2 is kind of equivalent to regressing the residuals from the initial outcome regression onto a covariate that is a function of the propensity score
 
 This means that if the initial model in step 1 was correctly specified then there is no signal in the residuals → epsilon will be small
 
 Strong residual confounding → large epsilon → large update Weak residual confounding → small epsilon → small update
 
+:::
 ## Quick recap
 
+::: incremental
 In Step 1, we obtained initial estimates of the expected outcome. These estimates are optimized to estimate E\[Y\|A,W\] (expected value of the outcome) not the ATE.
 
 We need to update those initial expected outcome estimates using information about the treatment mechanism, so we computed the expected probability of treatment, conditional on confounders, in Step 2.
 
 Step 3, we used quantities from Step 1 and Step 2 to solve an estimating equation for the EIF. This gave us an estimate of epsilon.
+
+:::
 
 ## Step 4: update the initial estimates of the expected outcome
 
@@ -297,7 +301,7 @@ Q_1_update <- plogis(qlogis(Q_1) + eps*H_1) # updated expected outcome for every
 Q_0_update <- plogis(qlogis(Q_0) + eps*H_0) # updated expected outcome for everyone not receiving treatment
 ```
 
-
+##
 1\. Update the expected outcomes of all observations, given the treatment they actually received and their baseline confounders. `Q_A_updated`
 
 2\. Update the expected outcomes, conditional on baseline confounders and everyone receiving the treatment. (`Q_1_updated`)
@@ -455,7 +459,7 @@ my_stack <- Stack$new(glm_learner, lasso_learner, ridge_learner)
 my_stack
 ```
 
-## define and train the super learner
+## Define and train the super learner
 
 
 ```{r}
