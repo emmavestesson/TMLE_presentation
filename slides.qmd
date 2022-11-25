@@ -29,16 +29,13 @@ editor: visual
 
 -   We need to preserve antibiotics to minimise antibiotic resistance
 
-
-
 ## 
-::: {layout-ncol=2}
+
+::: {layout-ncol="2"}
 ![](https://images.unsplash.com/photo-1592422207043-9e19520a698e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHlvdW5nJTIwcGhvbmV8ZW58MHx8MHx8&auto=format&fit=crop&w=500&q=60)
 
 ![](https://images.unsplash.com/photo-1498757581981-8ddb3c0b9b07?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=688&q=80)
-
 :::
-
 
 ## About this topic
 
@@ -109,11 +106,7 @@ Basic version of the TMLE algorithm - estimating the mean difference in outcomes
 
 If causal assumptions are met, this is called the Average Treatment Effect (ATE), or the mean difference in outcomes in a world in which everyone had received the treatment compared to a world in which everyone had not.
 
-
-
 ## Step 1: estimate the expected value of the outcome
-
-
 
 ```{r}
 #| include: true
@@ -121,9 +114,6 @@ If causal assumptions are met, this is called the Average Treatment Effect (ATE)
 #| echo: true
 Q <- glm(Y_abx ~ A_remote + covar1 + covar2, family = 'binomial')
 ```
-
-
-`
 
 ## 
 
@@ -201,6 +191,7 @@ dat_tmle %>%
 ```
 
 ## g-computation ATE
+
 ```{r}
 #| include: true
 #| eval: false
@@ -208,12 +199,11 @@ dat_tmle %>%
 mean(dat_tmle$Q_1-dat_tmle$Q_0)
 ```
 
-Does not fully account for the differences between the individuals getting the treatment and those that didn't 
+Does not fully account for the differences between the individuals getting the treatment and those that didn't
 
 ## Step 2: Estimate the probability of treatment
 
 We want to estimate the probability of treatment (ie the propensity score).
-
 
 ```{r}
 #| include: true
@@ -222,7 +212,6 @@ We want to estimate the probability of treatment (ie the propensity score).
 g <- glm(A_remote ~  covar1 + covar2, family = 'binomial')
 ```
 
-
 ## Calculate a clever covariate
 
 We use `g` to predict values and use the results to calculate the 'clever covariate'
@@ -230,6 +219,8 @@ We use `g` to predict values and use the results to calculate the 'clever covari
 1.  The inverse probability of receiving treatment.
 2.  The negative inverse probability of not receiving treatment.
 3.  If the observation was treated, the inverse probability of receiving treatment, and if they were not treated, the negative inverse probability of not receiving treatment. (This is the clever covariate, `H_A`)
+
+## 
 
 ```{r}
 #| include: true
@@ -253,7 +244,7 @@ dat_tmle <- # add clever covariate data to dat_tmle
 
 The point of this step is to solve an estimating equation for the efficient influence function (EIF) of our estimand of interest.
 
-Logit(True outcome) = logit(initial outcome estimate) + eps*H_A
+Logit(True outcome) = logit(initial outcome estimate) + eps\*H_A
 
 We can estimate eps using a logistic regression with one covariate (the clever covariate), no intercept and the initial outcome estimate as a fixed intercept (offset)
 
@@ -266,16 +257,16 @@ We can estimate eps using a logistic regression with one covariate (the clever c
 glm(Y_abx ~ -1 + offset(qlogis(Q_A)) + H_A, data=df , family='binomial')
 ```
 
-
 ## 
+
 ::: incremental
 Step 2 is kind of equivalent to regressing the residuals from the initial outcome regression onto a covariate that is a function of the propensity score
 
 This means that if the initial model in step 1 was correctly specified then there is no signal in the residuals → epsilon will be small
 
 Strong residual confounding → large epsilon → large update Weak residual confounding → small epsilon → small update
-
 :::
+
 ## Quick recap
 
 ::: incremental
@@ -284,7 +275,6 @@ In Step 1, we obtained initial estimates of the expected outcome. These estimate
 We need to update those initial expected outcome estimates using information about the treatment mechanism, so we computed the expected probability of treatment, conditional on confounders, in Step 2.
 
 Step 3, we used quantities from Step 1 and Step 2 to solve an estimating equation for the EIF. This gave us an estimate of epsilon.
-
 :::
 
 ## Step 4: update the initial estimates of the expected outcome
@@ -301,7 +291,8 @@ Q_1_update <- plogis(qlogis(Q_1) + eps*H_1) # updated expected outcome for every
 Q_0_update <- plogis(qlogis(Q_0) + eps*H_0) # updated expected outcome for everyone not receiving treatment
 ```
 
-##
+## 
+
 1\. Update the expected outcomes of all observations, given the treatment they actually received and their baseline confounders. `Q_A_updated`
 
 2\. Update the expected outcomes, conditional on baseline confounders and everyone receiving the treatment. (`Q_1_updated`)
@@ -316,11 +307,9 @@ ATE = mean(Q_1\_updated - Q_0\_updated)
 
 ## Steps we will ignore
 
-The standard errors 
+The standard errors
 
-
-## {background-image="https://images.unsplash.com/photo-1591453089816-0fbb971b454c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2940&q=80"}
-
+##  {background-image="https://images.unsplash.com/photo-1591453089816-0fbb971b454c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2940&q=80"}
 
 ## Super learner
 
@@ -338,7 +327,13 @@ Repeat this until each chunk has been left out one time and you have a set of cr
 
 ## 
 
-pred_mod_a -- predictions from the cross validation from model a pred_mod_b -- predictions from the cross validation from model b pred_mod_c -- predictions from the cross validation from model c pred_mod_d -- predictions from the cross validation from model d
+pred_mod_a -- predictions from the cross validation from model a
+
+pred_mod_b -- predictions from the cross validation from model b
+
+pred_mod_c -- predictions from the cross validation from model c
+
+pred_mod_d -- predictions from the cross validation from model d
 
 These are our cross validated predictions
 
@@ -368,27 +363,28 @@ Plug that data into the super learner to get final predictions!
 
 The `sl3` package will do all of this for you
 
-
 ## Picking your learners
 
 The learners should have a diverse set of learning strategies
 
 Pick learners based on
 
+::: incremental
+
 -   Data types (eg add models that handle splines if you have continuous data)
 
 -   Number of predictors (if many then use learners that reduce the dimensionality)
 
 -   Number of learners depends on how good your computer is
-
-
+::: 
 
 ## `sl3` learners
 
 ```{r}
 library(sl3)
 ```
-Properties
+
+
 ```{r}
 #| include: true
 #| eval: true
@@ -397,7 +393,7 @@ Properties
 sl3_list_properties()
 ```
 
-##
+## 
 
 ```{r}
 #| include: true
@@ -422,9 +418,7 @@ ls_metalearner <- make_learner(Lrnr_nnls)
 
 ```
 
-
-##
-
+## Run TMLE
 
 ```{r}
 #| include: true
@@ -446,8 +440,6 @@ tmle_fit <- tmle3(ate_spec, washb_data, node_list, learner_list)
 
 ```
 
-
-
 ## Combine learners
 
 ```{r}
@@ -461,7 +453,6 @@ my_stack
 
 ## Define and train the super learner
 
-
 ```{r}
 #| include: true
 #| eval: false
@@ -472,7 +463,7 @@ sl_fit <- sl$train(task = task)
 sl_preds <- sl_fit$predict(task = task)
 ```
 
-##
+## 
 
 ## Keen to learn more?
 
