@@ -3,7 +3,7 @@ title: "Causal inference in R - a practical introduction to the tlverse"
 format: 
   revealjs:
     slide-number: c/t 
-    theme: moon
+    theme: [styles.scss, moon ]
 editor: visual
 ---
 
@@ -325,15 +325,32 @@ Train all the models on 4 out of the 5 data chunks using the fifth chunk to get 
 
 Repeat this until each chunk has been left out one time and you have a set of cross-validated predictions for the full data set for each model
 
+![](Cross%20validation.jpeg)
+
 ## 
+```{r}
 
-pred_mod_a -- predictions from the cross validation from model a
+cross_validated_models <- read_csv("cross_validated_models.csv", 
+    na = "empty")
 
-pred_mod_b -- predictions from the cross validation from model b
 
-pred_mod_c -- predictions from the cross validation from model c
-
-pred_mod_d -- predictions from the cross validation from model d
+gt(cross_validated_models) %>% 
+   tab_style(
+    style = cell_fill(color = "teal"),
+    locations = cells_body(
+      columns =5,
+    )) %>% 
+  tab_style(
+    style = cell_fill(color = "pink"),
+    locations = cells_body(
+      columns =2,
+    )) %>% 
+  tab_style(
+    style = cell_fill(color = "purple"),
+    locations = cells_body(
+      columns =3
+    )) 
+```
 
 These are our cross validated predictions
 
@@ -343,7 +360,7 @@ Predictions on based data that was not used to train the model
 
 Use the cross-validated predictions to predict the outcome
 
-Y \~ a*pred_mod_a + b*pred_mod_b + c*pred_mod_c + d*pred_mod_d
+$$Y \sim  a*predsModel_1 + b*predsModel_2 + c*predsModel_3 + d*predsModel_4$$
 
 The model used is called a metalearner and the actual model can be anything! (default is a Non-Negative Least Squares)
 
@@ -351,7 +368,7 @@ The model used is called a metalearner and the actual model can be anything! (de
 
 Learners that did well will have a larger coefficient and therefore have more of a weight
 
-Y \~ 2*pred_mod_a + 0.5*pred_mod_b + 9*pred_mod_c + 3*pred_mod_d
+$$Y \sim 0.2*predsModel_1 + 0.1*predsModel_2 + 0*predsModel_3 + 0.7*predsModel_4$$
 
 This is our super learner algorithm
 
@@ -370,20 +387,18 @@ The learners should have a diverse set of learning strategies
 Pick learners based on
 
 ::: incremental
-
 -   Data types (eg add models that handle splines if you have continuous data)
 
 -   Number of predictors (if many then use learners that reduce the dimensionality)
 
 -   Number of learners depends on how good your computer is
-::: 
+:::
 
 ## `sl3` learners
 
 ```{r}
 library(sl3)
 ```
-
 
 ```{r}
 #| include: true
