@@ -1,0 +1,5 @@
+Observation number,Prediction model 1,Prediction model 2,….,Prediction model 5 
+Obs 1,0.6,0.4,…..,0.3
+Obs 2,0.2,0.3,…..,0.7
+…,,,,
+Last observation,0.1,0.25,….,0.3
