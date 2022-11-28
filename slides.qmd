@@ -6,14 +6,6 @@ format:
     theme: [styles.scss, moon ]
 editor: visual
 ---
-
-## About me
-
--   Principal data analyst at the Health Foundation
--   Part-time PhD student at the Institute of Child Health at UCL
--   R-Ladies London organiser
--   #rdogladies
-
 ## Content
 
 -   My origin story
@@ -21,14 +13,23 @@ editor: visual
 -   Theory of TMLE
 -   Finally some code! (`sl3` and `tmle3`)
 
-## My motivation for using causal inference
+## About me
+::: incremental
+-   Principal data analyst at the Health Foundation
+-   Part-time PhD student at the Institute of Child Health at UCL
+-   R-Ladies London organiser
+-   #rdogladies
 
+::: 
+
+## My motivation for using causal inference
+::: incremental
 -   What is the effect on antibiotic prescribing of having a remote GP consultation compared to a face-to-face consultation?
 
 -   Important questions as the pandemic has increased the use of remote consultations in general practice
 
 -   We need to preserve antibiotics to minimise antibiotic resistance
-
+::: 
 ## 
 
 ::: {layout-ncol="2"}
@@ -37,10 +38,10 @@ editor: visual
 ![](https://images.unsplash.com/photo-1498757581981-8ddb3c0b9b07?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=688&q=80)
 :::
 
-## About this topic
+## Causal inference
 
--   Machine learning has been all the rave - mainly focussed on prediction
--   Causal inference is used to determe the independent, actual effect of a treatment on a given outcome
+-   Machine learning is mainly focussed on prediction problems 
+-   Causal inference is used to determine the independent, actual effect of a treatment on a given outcome
 
 ![](https://imgs.xkcd.com/comics/correlation.png)
 
@@ -167,7 +168,7 @@ Q_0 <- predict(Q, newdata = W_A0)$pred %>%
 dat_tmle <- readRDS(here::here('data', 'dat_tmle.RDS'))
 dat_tmle %>%
   slice_head(n = 5) %>%  
-    select(-c(H_1, H_0)) %>% 
+    select(-c(H_1, H_0, H_A)) %>% 
   gt() %>% 
   fmt_number(columns = c(Q_A, Q_0, Q_1)) %>% 
   tab_style(
@@ -240,6 +241,54 @@ dat_tmle <- # add clever covariate data to dat_tmle
 
 ```
 
+## Data with clever covariate
+
+```{r}
+#| include: true
+#| echo: false
+#| eval: true
+
+dat_tmle %>%
+  slice_head(n = 5) %>%  
+  gt() %>% 
+  fmt_number(columns = c(Q_A, Q_0, Q_1, H_A, H_0, H_1)) %>% 
+  tab_style(
+    style = cell_fill(color = "teal"),
+    locations = cells_body(
+      columns =Q_A,
+    )) %>% 
+  tab_style(
+    style = cell_fill(color = "teal"),
+    locations = cells_body(
+      columns =Q_0,
+      rows = A_remote == 0
+    )) %>% 
+  tab_style(
+    style = cell_fill(color = "teal"),
+    locations = cells_body(
+      columns =Q_1,
+      rows = A_remote == 1
+    )) %>% 
+  tab_style(
+  style = cell_fill(color = "pink"),
+  locations = cells_body(
+    columns =H_A,
+  )) %>% 
+  tab_style(
+    style = cell_fill(color = "pink"),
+    locations = cells_body(
+      columns =H_0,
+      rows = A_remote == 0
+    )) %>% 
+  tab_style(
+    style = cell_fill(color = "pink"),
+    locations = cells_body(
+      columns =H_1,
+      rows = A_remote == 1
+    )) 
+
+```
+
 ## Step 3: Estimate the Fluctuation Parameter
 
 The point of this step is to solve an estimating equation for the efficient influence function (EIF) of our estimand of interest.
@@ -292,13 +341,13 @@ Q_0_update <- plogis(qlogis(Q_0) + eps*H_0) # updated expected outcome for every
 ```
 
 ## 
-
+::: incremental
 1\. Update the expected outcomes of all observations, given the treatment they actually received and their baseline confounders. `Q_A_updated`
 
 2\. Update the expected outcomes, conditional on baseline confounders and everyone receiving the treatment. (`Q_1_updated`)
 
 3\. Update the expected outcomes, conditional on baseline confounders and no one receiving the treatment. (`Q_0_updated`)
-
+::: 
 ## Step 5: compute the ATE
 
 Mean difference between the updated outcome estimates when everyone is treated vs when no one is treated
@@ -313,21 +362,31 @@ The standard errors
 
 ## Super learner
 
-An ensemble machine learning that combines multiple learners (algorithms) and uses cross-validation to select the optimal ensemble (collection) of learners making a single new prediction algorithm This can either be one learner or a combination of the different learners
+An ensemble machine learning that combines multiple learners (algorithms) and uses cross-validation to select the optimal ensemble (collection) of learners making a single new prediction algorithm.
+
+This can either be one learner or a combination of the different learners.
 
 [![](https://koalaverse.github.io/machine-learning-in-R/images/h2oEnsemble.png){width="16cm"}](https://koalaverse.github.io/machine-learning-in-R/images/h2oEnsemble.png)
 
 ## Cross-validation
 
+::: columns
+::: {.column width="60%"}
 Create a cross validation set of your data (eg 5 folds)
 
 Train all the models on 4 out of the 5 data chunks using the fifth chunk to get predictions
 
 Repeat this until each chunk has been left out one time and you have a set of cross-validated predictions for the full data set for each model
+:::
 
-![](Cross%20validation.jpeg)
+::: {.column width="40%"}
+![](Cross_validation.jpeg)
+:::
+:::
+
 
 ## 
+
 ```{r}
 
 cross_validated_models <- read_csv("cross_validated_models.csv", 
@@ -360,7 +419,9 @@ Predictions on based data that was not used to train the model
 
 Use the cross-validated predictions to predict the outcome
 
-$$Y \sim  a*predsModel_1 + b*predsModel_2 + c*predsModel_3 + d*predsModel_4$$
+$$
+Y \sim a*predsModel_1 + b*predsModel_2 + c*predsModel_3 + d*predsModel_4
+$$
 
 The model used is called a metalearner and the actual model can be anything! (default is a Non-Negative Least Squares)
 
@@ -419,7 +480,8 @@ sl3_list_learners(properties = 'binomial')
 ```
 
 ## Specify learners
-
+This will depend on the type of outcome you have
+Individual learners
 ```{r}
 #| include: true
 #| eval: true
@@ -429,9 +491,20 @@ glm_learner <- Lrnr_glm$new(family = "binomial")
 lasso_learner <- Lrnr_glmnet$new(family = "binomial")
 ridge_learner <- Lrnr_glmnet$new(alpha = 0, family = "binomial")
 
+
+```
+
+Meta learner 
+```{r}
+#| include: true
+#| eval: true
+#| echo: true
+
+
 ls_metalearner <- make_learner(Lrnr_nnls)
 
 ```
+
 
 ## Run TMLE
 
@@ -476,9 +549,21 @@ my_stack
 sl <- Lrnr_sl$new(learners = stack, metalearner = Lrnr_nnls$new())
 sl_fit <- sl$train(task = task)
 sl_preds <- sl_fit$predict(task = task)
+
+saveRDS(sl_fit, 'sl_fit.rds')
 ```
 
-## 
+## Use a pretrained model in tmle
+
+```{r}
+#| eval: false
+learner_list <- list(A = sl_fit, Y = sl_Y)
+
+tmle_fit <- tmle3(ate_spec, washb_data, node_list, learner_list)
+
+```
+
+
 
 ## Keen to learn more?
 
