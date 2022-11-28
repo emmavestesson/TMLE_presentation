@@ -3,9 +3,11 @@ title: "Causal inference in R - a practical introduction to the tlverse"
 format: 
   revealjs:
     slide-number: c/t 
+    slide-layout: center
     theme: [styles.scss, moon ]
 editor: visual
 ---
+
 ## Content
 
 -   My origin story
@@ -14,22 +16,24 @@ editor: visual
 -   Finally some code! (`sl3` and `tmle3`)
 
 ## About me
+
 ::: incremental
 -   Principal data analyst at the Health Foundation
 -   Part-time PhD student at the Institute of Child Health at UCL
 -   R-Ladies London organiser
 -   #rdogladies
-
-::: 
+:::
 
 ## My motivation for using causal inference
+
 ::: incremental
 -   What is the effect on antibiotic prescribing of having a remote GP consultation compared to a face-to-face consultation?
 
 -   Important questions as the pandemic has increased the use of remote consultations in general practice
 
 -   We need to preserve antibiotics to minimise antibiotic resistance
-::: 
+:::
+
 ## 
 
 ::: {layout-ncol="2"}
@@ -40,7 +44,7 @@ editor: visual
 
 ## Causal inference
 
--   Machine learning is mainly focussed on prediction problems 
+-   Machine learning is mainly focussed on prediction problems
 -   Causal inference is used to determine the independent, actual effect of a treatment on a given outcome
 
 ![](https://imgs.xkcd.com/comics/correlation.png)
@@ -77,14 +81,15 @@ g <- readRDS(here::here('data', 'g.RDS'))
 
 ## Targeted maximum likelihood (TMLE)
 
-TMLE has two main parts
+TMLE has two main parts 
 
--   Estimate the conditional probability of being exposed based on confounders that you have identified
--   Estimate the expected value of the outcome using treatment and confounders as predictors the outcome
--   Combines that to estimate the average treatment effect
+::: incremental 
+1. Estimate the conditional probability of being exposed based on confounders that you have identified 
+2. Estimate the expected value of the outcome using treatment and confounders as predictors the outcome
+3. Combines that to estimate the average treatment effect 
 
 It is doubly robust so if you get either of those two right then your estimate is consistent
-
+:::
 ## Causal assumptions
 
 It is not enough to use a method that is suitable for causal inference to make causal claims
@@ -101,12 +106,13 @@ It is not enough to use a method that is suitable for causal inference to make c
 
 ![](tlverse_github.png)
 
-## Toy example
-
+## Toy example with pseudo code
+::: {.fragment}
 Basic version of the TMLE algorithm - estimating the mean difference in outcomes, adjusted for confounders, for a binary outcome and binary treatment.
-
+:::
+::: {.fragment}
 If causal assumptions are met, this is called the Average Treatment Effect (ATE), or the mean difference in outcomes in a world in which everyone had received the treatment compared to a world in which everyone had not.
-
+:::
 ## Step 1: estimate the expected value of the outcome
 
 ```{r}
@@ -290,11 +296,13 @@ dat_tmle %>%
 ```
 
 ## Step 3: Estimate the Fluctuation Parameter
-
+::: {.fragment}
 The point of this step is to solve an estimating equation for the efficient influence function (EIF) of our estimand of interest.
-
+:::
+::: {.fragment}
 Logit(True outcome) = logit(initial outcome estimate) + eps\*H_A
-
+:::
+::: {.fragment}
 We can estimate eps using a logistic regression with one covariate (the clever covariate), no intercept and the initial outcome estimate as a fixed intercept (offset)
 
 ```{r}
@@ -303,26 +311,30 @@ We can estimate eps using a logistic regression with one covariate (the clever c
 #| echo: true
 
 
-glm(Y_abx ~ -1 + offset(qlogis(Q_A)) + H_A, data=df , family='binomial')
+glm(Y_abx ~ -1 + offset(qlogis(Q_A)) + H_A, data = dat_tmle , family='binomial')
 ```
-
+:::
 ## 
 
-::: incremental
+::: {.fragment}
 Step 2 is kind of equivalent to regressing the residuals from the initial outcome regression onto a covariate that is a function of the propensity score
-
+:::
+::: {.fragment}
 This means that if the initial model in step 1 was correctly specified then there is no signal in the residuals → epsilon will be small
-
+:::
+::: {.fragment}
 Strong residual confounding → large epsilon → large update Weak residual confounding → small epsilon → small update
 :::
 
 ## Quick recap
 
-::: incremental
+::: {.fragment}
 In Step 1, we obtained initial estimates of the expected outcome. These estimates are optimized to estimate E\[Y\|A,W\] (expected value of the outcome) not the ATE.
-
+:::
+::: {.fragment}
 We need to update those initial expected outcome estimates using information about the treatment mechanism, so we computed the expected probability of treatment, conditional on confounders, in Step 2.
-
+:::
+::: {.fragment}
 Step 3, we used quantities from Step 1 and Step 2 to solve an estimating equation for the EIF. This gave us an estimate of epsilon.
 :::
 
@@ -341,13 +353,15 @@ Q_0_update <- plogis(qlogis(Q_0) + eps*H_0) # updated expected outcome for every
 ```
 
 ## 
+
+
+1. Update the expected outcomes of all observations, given the treatment they actually received and their baseline confounders. `Q_A_updated`
 ::: incremental
-1\. Update the expected outcomes of all observations, given the treatment they actually received and their baseline confounders. `Q_A_updated`
+2. Update the expected outcomes, conditional on baseline confounders and everyone receiving the treatment. (`Q_1_updated`)
 
-2\. Update the expected outcomes, conditional on baseline confounders and everyone receiving the treatment. (`Q_1_updated`)
+3. Update the expected outcomes, conditional on baseline confounders and no one receiving the treatment. (`Q_0_updated`)
+:::
 
-3\. Update the expected outcomes, conditional on baseline confounders and no one receiving the treatment. (`Q_0_updated`)
-::: 
 ## Step 5: compute the ATE
 
 Mean difference between the updated outcome estimates when everyone is treated vs when no one is treated
@@ -361,29 +375,34 @@ The standard errors
 ##  {background-image="https://images.unsplash.com/photo-1591453089816-0fbb971b454c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2940&q=80"}
 
 ## Super learner
-
+::: {.fragment}
 An ensemble machine learning that combines multiple learners (algorithms) and uses cross-validation to select the optimal ensemble (collection) of learners making a single new prediction algorithm.
-
+:::
+::: {.fragment}
 This can either be one learner or a combination of the different learners.
 
 [![](https://koalaverse.github.io/machine-learning-in-R/images/h2oEnsemble.png){width="16cm"}](https://koalaverse.github.io/machine-learning-in-R/images/h2oEnsemble.png)
-
+:::
 ## Cross-validation
 
 ::: columns
 ::: {.column width="60%"}
+
 Create a cross validation set of your data (eg 5 folds)
 
+::: {.fragment}
 Train all the models on 4 out of the 5 data chunks using the fifth chunk to get predictions
+:::
 
+::: {.fragment}
 Repeat this until each chunk has been left out one time and you have a set of cross-validated predictions for the full data set for each model
+:::
 :::
 
 ::: {.column width="40%"}
 ![](Cross_validation.jpeg)
 :::
 :::
-
 
 ## 
 
@@ -480,8 +499,9 @@ sl3_list_learners(properties = 'binomial')
 ```
 
 ## Specify learners
-This will depend on the type of outcome you have
-Individual learners
+
+This will depend on the type of outcome you have Individual learners
+
 ```{r}
 #| include: true
 #| eval: true
@@ -494,7 +514,8 @@ ridge_learner <- Lrnr_glmnet$new(alpha = 0, family = "binomial")
 
 ```
 
-Meta learner 
+Meta learner
+
 ```{r}
 #| include: true
 #| eval: true
@@ -504,7 +525,6 @@ Meta learner
 ls_metalearner <- make_learner(Lrnr_nnls)
 
 ```
-
 
 ## Run TMLE
 
@@ -547,7 +567,7 @@ my_stack
 #| echo: true
 
 sl <- Lrnr_sl$new(learners = stack, metalearner = Lrnr_nnls$new())
-sl_fit <- sl$train(task = task)
+sl_fit <- sl$train(task = task, keepExtra=FALSE)
 sl_preds <- sl_fit$predict(task = task)
 
 saveRDS(sl_fit, 'sl_fit.rds')
@@ -557,13 +577,12 @@ saveRDS(sl_fit, 'sl_fit.rds')
 
 ```{r}
 #| eval: false
+#| echo: true
 learner_list <- list(A = sl_fit, Y = sl_Y)
 
 tmle_fit <- tmle3(ate_spec, washb_data, node_list, learner_list)
 
 ```
-
-
 
 ## Keen to learn more?
 
