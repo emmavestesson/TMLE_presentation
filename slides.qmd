@@ -584,6 +584,14 @@ tmle_fit <- tmle3(ate_spec, washb_data, node_list, learner_list)
 
 ```
 
+## Extract propensity scores
+```{r}
+#| eval: false
+#| echo: true
+propensity_score <- tmle_fit$likelihood$initial_likelihood$factor_list$A$learner$predict()
+```
+
+
 ## Keen to learn more?
 
 TMLE
